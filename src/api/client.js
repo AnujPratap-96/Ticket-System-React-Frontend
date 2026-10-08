@@ -14,8 +14,11 @@ export const tokenStore = {
   },
 };
 
+const rawApiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1';
+export const API_BASE_URL = rawApiUrl.replace(/\/+$/, '');
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1',
+  baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
 });
 
@@ -35,7 +38,7 @@ api.interceptors.response.use(
     const url = err.config?.url || '';
     if (err.response?.status === 401 && !url.includes('/auth/login')) {
       tokenStore.clear();
-      onUnauthorized();
+      onUnauthorized(url);
     }
     return Promise.reject(err);
   },

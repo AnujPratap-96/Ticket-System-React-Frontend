@@ -22,7 +22,8 @@ async function getEcho() {
       const [{ default: Echo }, { default: Pusher }] = await Promise.all([import('laravel-echo'), import('pusher-js')]);
       window.Pusher = Pusher;
       const scheme = import.meta.env.VITE_REVERB_SCHEME || 'https';
-      const api = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1';
+      const rawApi = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1';
+      const api = rawApi.replace(/\/+$/, '');
       return new Echo({
         broadcaster: 'reverb',
         key: KEY,

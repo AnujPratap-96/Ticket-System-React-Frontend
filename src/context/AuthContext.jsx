@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { stopRealtime } from '../lib/realtime';
 import api, { setUnauthorizedHandler, tokenStore } from '../api/client';
 import { useToast } from './ToastContext';
@@ -11,6 +11,7 @@ export function AuthProvider({ children }) {
   const [permissions, setPermissions] = useState({});
   const [booting, setBooting] = useState(true);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const bootingRef = useRef(true);
 
   const clear = useCallback(() => {
     tokenStore.clear();
@@ -20,9 +21,11 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    setUnauthorizedHandler(() => {
+    setUnauthorizedHandler((url) => {
       clear();
-      toast.error('Please sign in again to continue.', 'Your session expired');
+      if (!bootingRef.current && (!url || !url.includes('/auth/me'))) {
+        toast.error('Please sign in again to continue.', 'Your session expired');
+      }
     });
   }, [clear, toast]);
 
@@ -31,6 +34,7 @@ export function AuthProvider({ children }) {
     let cancelled = false;
     (async () => {
       if (!tokenStore.get()) {
+        bootingRef.current = false;
         setBooting(false);
         return;
       }
@@ -44,6 +48,7 @@ export function AuthProvider({ children }) {
       } catch {
         if (!cancelled) clear();
       } finally {
+        bootingRef.current = false;
         if (!cancelled) setBooting(false);
       }
     })();
