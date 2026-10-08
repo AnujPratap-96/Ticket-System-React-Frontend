@@ -5,7 +5,6 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import Modal from '../../components/common/Modal';
 import { label } from '../../lib';
-import PasswordInput from '../../components/common/PasswordInput';
 
 const input = 'mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white';
 const ROLES = ['agent', 'lead', 'admin'];
@@ -122,14 +121,14 @@ export default function TeamPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <h1 className="text-xl font-bold text-slate-900">Team</h1>
-        <div className="flex items-center gap-2">
-          <select aria-label="Filter by role" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
+          <select aria-label="Filter by role" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white flex-1 sm:flex-initial">
             <option value="">Staff</option><option value="customer">Customers</option><option value="agent">Agents</option><option value="lead">Team leads</option><option value="admin">Admins</option>
           </select>
-          <input aria-label="Search team" placeholder="Search name or email" value={search} onChange={(e) => setSearch(e.target.value)} className="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
-          {isAdmin && <button onClick={() => setForm({})} className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold"><UserPlus className="w-4 h-4" />Add member</button>}
+          <input aria-label="Search team" placeholder="Search name or email" value={search} onChange={(e) => setSearch(e.target.value)} className="border border-slate-300 rounded-lg px-3 py-2 text-sm flex-1 sm:flex-initial min-w-0" />
+          {isAdmin && <button onClick={() => setForm({})} className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold w-full sm:w-auto shrink-0"><UserPlus className="w-4 h-4" />Add member</button>}
         </div>
       </div>
 

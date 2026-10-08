@@ -182,7 +182,7 @@ export default function TicketDetailPage() {
                   <button type="button" onClick={aiDraft} disabled={!!aiBusy} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-violet-300 text-violet-700 hover:bg-violet-50 disabled:opacity-50"><Sparkles className="w-3.5 h-3.5" />{aiBusy === 'draft' ? 'Drafting…' : 'Draft reply'}</button>
                   <TranslateTool ticketId={ticket.id} text={body} onResult={(t) => setBody(t)} />
                   <MentionPicker ticketId={ticket.id} onMention={(u) => { setMentions((m) => [...m, u]); setBody((b) => `${b}${b && !b.endsWith(' ') ? ' ' : ''}@${u.name} `); }} />
-                  <span className="ml-auto"><CannedPicker customerName={ticket.customer?.name} agentName={user.name} agentTitle={user.job_title} signature={signatureOf(user)} onPick={(text) => setBody((b) => (b ? `${b}\n${text}` : text))} /></span>
+                  <span className="sm:ml-auto"><CannedPicker customerName={ticket.customer?.name} agentName={user.name} agentTitle={user.job_title} signature={signatureOf(user)} onPick={(text) => setBody((b) => (b ? `${b}\n${text}` : text))} /></span>
                 </div>
               )}
               <RichEditor value={body} onChange={setBody} ariaLabel="Message" tone={internal ? 'note' : 'default'} maxLength={20000}
@@ -198,7 +198,7 @@ export default function TicketDetailPage() {
               )}
               <AttachmentPicker ref={picker} ticketId={Number(id)} onChange={setFiles} disabled={sending} />
               <div className="flex justify-end">
-                <button disabled={sending || files.uploading || !body.trim()} onClick={() => send(false)} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+                <button disabled={sending || files.uploading || !body.trim()} onClick={() => send(false)} className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-semibold w-full sm:w-auto">
                   <Send className="w-4 h-4" />{sending ? 'Sending…' : internal ? 'Add note' : 'Send reply'}
                 </button>
               </div>

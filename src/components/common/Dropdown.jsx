@@ -23,7 +23,7 @@ export default function Dropdown({ label, icon: Icon, align = 'left', buttonClas
         <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
-        <div role="menu" onClick={() => setOpen(false)} className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} mt-2 min-w-52 bg-white text-slate-800 border border-slate-200 rounded-xl shadow-xl py-1.5 z-50`}>
+        <div role="menu" onClick={() => setOpen(false)} className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} mt-2 min-w-52 max-w-[calc(100vw-2rem)] bg-white text-slate-800 border border-slate-200 rounded-xl shadow-xl py-1.5 z-50`}>
           {children}
         </div>
       )}

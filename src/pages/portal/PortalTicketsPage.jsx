@@ -33,7 +33,7 @@ export default function PortalTicketsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
           <h1 className="text-xl font-bold text-slate-900">{user.is_org_admin && view === 'company' ? t('portal.companyTickets') : t('portal.myTickets')}</h1>
           {user.is_org_admin && (
@@ -44,25 +44,27 @@ export default function PortalTicketsPage() {
             </div>
           )}
         </div>
-        <div className="flex items-center gap-3">
-          <select aria-label="Filter by status" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end">
+          <select aria-label="Filter by status" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white flex-1 sm:flex-initial">
             <option value="">All</option>
             {STATUSES.map((s) => <option key={s} value={s}>{label(s)}</option>)}
           </select>
-          <Link to="/portal/new" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">Create ticket</Link>
+          <Link to="/portal/new" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shrink-0">Create ticket</Link>
         </div>
       </div>
 
       <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100" aria-busy={loading}>
         {!loading && tickets.length === 0 && <div className="p-10 text-center text-sm text-slate-500">{t('portal.empty')} <Link to="/portal/new" className="text-indigo-600 font-semibold">{t('portal.createFirst')}</Link>.</div>}
         {tickets.map((t) => (
-          <Link key={t.id} to={`/portal/tickets/${t.id}`} className="flex items-center justify-between gap-3 p-4 hover:bg-slate-50">
-            <div className="min-w-0">
+          <Link key={t.id} to={`/portal/tickets/${t.id}`} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 p-4 hover:bg-slate-50">
+            <div className="min-w-0 flex-1">
               <div className="text-xs text-slate-500 font-mono">{t.ticket_number}</div>
               <div className="font-semibold text-slate-900 truncate">{t.title}</div>
               <div className="text-xs text-slate-500">{user.is_org_admin && t.customer && t.customer.id !== user.id ? `${t.customer.name} · ` : ''}{t.department?.name} · {fmt(t.created_at)}</div>
             </div>
-            <StatusBadge status={t.status} />
+            <div className="self-start sm:self-center shrink-0">
+              <StatusBadge status={t.status} />
+            </div>
           </Link>
         ))}
       </div>

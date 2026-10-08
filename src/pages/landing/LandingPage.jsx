@@ -37,17 +37,21 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <header className="border-b border-slate-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5 font-bold"><span className="bg-indigo-600 text-white p-1.5 rounded-lg"><LifeBuoy className="w-5 h-5" /></span>DeskFlow Support</Link>
-          <nav className="flex items-center gap-2 sm:gap-4 text-sm font-medium" aria-label="Site">
-            <LanguageSelect /><ThemeToggle />
-            <Link to="/help" className="text-slate-600 hover:text-slate-900">Help center</Link>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-2">
+          <Link to="/" className="flex items-center gap-2 font-bold shrink-0">
+            <span className="bg-indigo-600 text-white p-1.5 rounded-lg"><LifeBuoy className="w-5 h-5" /></span>
+            <span>DeskFlow<span className="hidden sm:inline"> Support</span></span>
+          </Link>
+          <nav className="flex items-center gap-1.5 sm:gap-4 text-sm font-medium" aria-label="Site">
+            <div className="hidden sm:block"><LanguageSelect /></div>
+            <ThemeToggle />
+            <Link to="/help" className="hidden md:inline text-slate-600 hover:text-slate-900">Help center</Link>
             {home ? (
-              <Link to={home} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold">{user.role === 'customer' ? 'My tickets' : 'Open console'}</Link>
+              <Link to={home} className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold">{user.role === 'customer' ? 'My tickets' : 'Open console'}</Link>
             ) : (
               <>
-                <Link to="/login" className="text-slate-700 hover:text-slate-900">Sign in</Link>
-                <Link to="/register" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold">Create account</Link>
+                <Link to="/login" className="text-slate-700 hover:text-slate-900 px-1.5 py-1 text-xs sm:text-sm">Sign in</Link>
+                <Link to="/register" className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold">Create account</Link>
               </>
             )}
           </nav>

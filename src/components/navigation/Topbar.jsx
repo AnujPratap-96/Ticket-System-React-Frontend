@@ -42,14 +42,14 @@ export default function Topbar() {
 
   return (
     <header className="staff-topbar bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-5 min-w-0">
-          <NavLink to="/staff" end className="flex items-center gap-2.5 shrink-0" aria-label="DeskFlow home">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 h-14 flex items-center justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-5 min-w-0">
+          <NavLink to="/staff" end className="flex items-center gap-2 shrink-0" aria-label="DeskFlow home">
             <span className="bg-indigo-600 p-1.5 rounded-lg"><LifeBuoy className="w-4 h-4" /></span>
             <span className="font-bold tracking-wide hidden sm:inline">DeskFlow</span>
           </NavLink>
 
-          <nav className="flex items-center gap-1" aria-label="Main">
+          <nav className="flex items-center gap-0.5 sm:gap-1" aria-label="Main">
             <NavLink to="/staff" end className={tab}><MessageSquare className="w-4 h-4" /><span className="hidden md:inline">{t('nav.tickets')}</span></NavLink>
             {permissions.view_analytics && <NavLink to="/staff/analytics" className={tab}><BarChart2 className="w-4 h-4" /><span className="hidden md:inline">{t('nav.analytics')}</span></NavLink>}
             <NavLink to="/staff/canned" className={tab}><MessageSquareText className="w-4 h-4" /><span className="hidden md:inline">{t('nav.replies')}</span></NavLink>
@@ -65,8 +65,8 @@ export default function Topbar() {
           </nav>
         </div>
 
-        <div className="flex items-center gap-1.5 shrink-0">
-          <LanguageSelect onDark />
+        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+          <div className="hidden sm:block"><LanguageSelect onDark /></div>
           <ThemeToggle onDark />
           <NotificationBell basePath="/staff" dark />
           <Dropdown
@@ -82,6 +82,10 @@ export default function Topbar() {
                 <div className="text-xs text-slate-500 truncate">{user.email}</div>
                 <span className="inline-block mt-1 px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 uppercase text-[10px] font-bold">{user.role}</span>
               </div>
+            </div>
+            <div className="sm:hidden border-b border-slate-100 px-4 py-2">
+              <div className="text-[10px] uppercase tracking-wide text-slate-400 mb-1">Language</div>
+              <LanguageSelect />
             </div>
             <NavLink to="/staff/account" role="menuitem" className={menuItem}><UserIcon className="w-4 h-4 text-slate-400" />My account</NavLink>
             <NavLink to="/help" role="menuitem" className={menuItem}><BookOpen className="w-4 h-4 text-slate-400" />Help center</NavLink>

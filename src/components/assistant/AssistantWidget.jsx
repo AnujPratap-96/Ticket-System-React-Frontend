@@ -102,13 +102,13 @@ export default function AssistantWidget() {
   return (
     <>
       <button type="button" onClick={() => setOpen((o) => !o)} aria-label={open ? 'Close support assistant' : 'Open support assistant'} aria-expanded={open}
-        className="fixed bottom-5 right-5 z-50 flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white pl-4 pr-5 py-3 rounded-full shadow-lg shadow-indigo-500/30 transition-all">
+        className="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-50 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white p-3 sm:pl-4 sm:pr-5 sm:py-3 rounded-full shadow-lg shadow-indigo-500/30 transition-all">
         {open ? <X className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
         <span className="text-sm font-semibold hidden sm:inline">{open ? 'Close' : 'Ask us'}</span>
       </button>
 
       {open && (
-        <section role="dialog" aria-label="Support assistant" className="fixed bottom-20 right-3 sm:right-5 z-50 w-[calc(100vw-1.5rem)] sm:w-[400px] h-[560px] max-h-[calc(100vh-6rem)] bg-white border border-slate-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <section role="dialog" aria-label="Support assistant" className="fixed bottom-16 sm:bottom-20 inset-x-2 sm:inset-x-auto sm:right-5 z-50 sm:w-[400px] h-[calc(100dvh-5.5rem)] sm:h-[560px] max-h-[640px] bg-white border border-slate-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
           <header className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="bg-white/20 p-1.5 rounded-lg"><Bot className="w-5 h-5" /></span>

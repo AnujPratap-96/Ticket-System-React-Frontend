@@ -37,9 +37,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 py-10">
       <div className="absolute top-3 right-3 flex items-center gap-2"><LanguageSelect /><ThemeToggle /></div>
-      <form onSubmit={submit} className="bg-white w-full max-w-sm p-8 rounded-xl border border-slate-200 shadow-sm space-y-4">
+      <form onSubmit={submit} className="bg-white w-full max-w-sm p-6 sm:p-8 rounded-xl border border-slate-200 shadow-sm space-y-4 my-auto">
         <div className="flex items-center gap-3 mb-2">
           <div className="bg-indigo-600 p-2 rounded-lg text-white"><LifeBuoy className="w-5 h-5" /></div>
           <div>

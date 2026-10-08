@@ -42,7 +42,7 @@ export default function DepartmentsPage() {
     <div className="space-y-6">
       <h1 className="text-xl font-bold text-slate-900">Departments</h1>
       <form onSubmit={submit} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-4">
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-3 items-end">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
         <label className="text-xs font-medium text-slate-600">Name<input required className={f} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label>
         <label className="text-xs font-medium text-slate-600">Slug<input required pattern="[a-z0-9-]+" title="lowercase letters, numbers, dashes" className={f} value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} /></label>
         <label className="text-xs font-medium text-slate-600">Opens<input type="time" required className={f} value={form.business_hours_start} onChange={(e) => setForm({ ...form, business_hours_start: e.target.value })} /></label>

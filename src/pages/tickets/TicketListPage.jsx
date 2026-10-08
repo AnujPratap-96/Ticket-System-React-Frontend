@@ -107,29 +107,29 @@ export default function TicketListPage() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
             <input aria-label="Search tickets" placeholder="Search number or title" value={filters.search}
-              onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))} className={`${sel} pl-9`} />
+              onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))} className={`${sel} pl-9 w-full sm:w-auto`} />
           </div>
-          <select aria-label="Filter by status" className={sel} value={filters.status} onChange={(e) => setFilter({ status: e.target.value })}>
+          <select aria-label="Filter by status" className={`${sel} flex-1 sm:flex-initial`} value={filters.status} onChange={(e) => setFilter({ status: e.target.value })}>
             <option value="">All statuses</option>
             {STATUSES.map((s) => <option key={s} value={s}>{label(s)}</option>)}
           </select>
-          <select aria-label="Filter by priority" className={sel} value={filters.priority} onChange={(e) => setFilter({ priority: e.target.value })}>
+          <select aria-label="Filter by priority" className={`${sel} flex-1 sm:flex-initial`} value={filters.priority} onChange={(e) => setFilter({ priority: e.target.value })}>
             <option value="">All priorities</option>
             {PRIORITIES.map((p) => <option key={p} value={p}>{label(p)}</option>)}
           </select>
-          {isStaff && <input aria-label="Filter by tag" placeholder="Tag" value={filters.tag} onChange={(e) => setFilter({ tag: e.target.value.trim().toLowerCase() })} className={`${sel} w-28`} />}
+          {isStaff && <input aria-label="Filter by tag" placeholder="Tag" value={filters.tag} onChange={(e) => setFilter({ tag: e.target.value.trim().toLowerCase() })} className={`${sel} w-24 sm:w-28`} />}
           {isStaff && (
             <label className="flex items-center gap-2 text-sm text-slate-700">
               <input type="checkbox" checked={filters.mine} onChange={(e) => setFilter({ mine: e.target.checked })} /> Assigned to me
             </label>
           )}
         </div>
-        <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+        <button onClick={() => setShowCreate(true)} className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold w-full sm:w-auto shrink-0">
           <PlusCircle className="w-4 h-4" />Submit Ticket
         </button>
       </div>
@@ -148,7 +148,7 @@ export default function TicketListPage() {
       )}
 
       {isStaff && selected.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 mb-3 px-4 py-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-slate-800 text-sm" role="region" aria-label="Bulk actions">
+        <div className="flex flex-wrap items-center gap-2 mb-3 px-3 sm:px-4 py-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-slate-800 text-sm" role="region" aria-label="Bulk actions">
           <strong>{selected.length} selected</strong>
           <select aria-label="Change status" disabled={bulkBusy} defaultValue="" onChange={(e) => { if (e.target.value) bulk({ action: 'status', status: e.target.value }, 'Status updated'); e.target.value = ''; }} className="bg-white border border-slate-300 text-slate-700 rounded-lg px-2 py-1">
             <option value="">Set status…</option>{STATUSES.map((st) => <option key={st} value={st}>{label(st)}</option>)}
@@ -157,7 +157,7 @@ export default function TicketListPage() {
             <option value="">Set priority…</option>{PRIORITIES.map((p) => <option key={p} value={p}>{label(p)}</option>)}
           </select>
           {user.role !== 'admin' && <button disabled={bulkBusy} onClick={() => bulk({ action: 'assign', agent_id: user.id }, 'Assigned to you')} className="bg-indigo-500 hover:bg-indigo-400 rounded-lg px-3 py-1 font-semibold">Assign to me</button>}
-          <button onClick={() => setSelected([])} className="ml-auto font-semibold text-slate-500 hover:text-slate-900">Clear</button>
+          <button onClick={() => setSelected([])} className="sm:ml-auto font-semibold text-slate-500 hover:text-slate-900">Clear</button>
         </div>
       )}
 
@@ -166,13 +166,13 @@ export default function TicketListPage() {
         {tickets.map((t) => (
           <div key={t.id} className="flex items-stretch hover:bg-slate-50">
             {isStaff && (
-              <label className="flex items-center pl-4 pr-1 cursor-pointer">
+              <label className="flex items-center pl-3 sm:pl-4 pr-1 cursor-pointer">
                 <input type="checkbox" aria-label={`Select ${t.ticket_number}`} checked={selected.includes(t.id)} onChange={() => setSelected((sel) => (sel.includes(t.id) ? sel.filter((x) => x !== t.id) : [...sel, t.id]))} />
               </label>
             )}
-          <Link to={`/staff/tickets/${t.id}`} className="block p-4 flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
+          <Link to={`/staff/tickets/${t.id}`} className="block p-3 sm:p-4 flex-1 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
+              <div className="min-w-0 flex-1">
                 <div className="text-xs text-slate-500 font-mono">{t.ticket_number} · {t.department?.name}</div>
                 <div className="font-semibold text-slate-900 truncate">{t.title}</div>
                 <div className="text-xs text-slate-500 mt-0.5">
@@ -180,9 +180,9 @@ export default function TicketListPage() {
                   {t.assigned_agent ? `assigned to ${t.assigned_agent.name}` : 'unassigned'} · {fmt(t.created_at)}
                 </div>
               </div>
-              <div className="flex flex-col items-end gap-1.5 shrink-0">
-                <div className="flex gap-1.5">{t.ai?.urgent && <span title="Looks urgent" className="px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700">⚡ Urgent</span>}{t.ai?.sentiment === 'negative' && <span title="Customer sounds upset" className="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800">😠</span>}<PriorityBadge priority={t.priority} /><StatusBadge status={t.status} /></div>
-                {t.status !== 'closed' && <div className="flex gap-1.5">{(t.sla_deadlines || []).map((d) => <SlaBadge key={d.id} deadline={d} />)}</div>}
+              <div className="flex flex-wrap sm:flex-col items-start sm:items-end gap-1.5 shrink-0 pt-1 sm:pt-0">
+                <div className="flex flex-wrap items-center gap-1.5">{t.ai?.urgent && <span title="Looks urgent" className="px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700">⚡ Urgent</span>}{t.ai?.sentiment === 'negative' && <span title="Customer sounds upset" className="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800">😠</span>}<PriorityBadge priority={t.priority} /><StatusBadge status={t.status} /></div>
+                {t.status !== 'closed' && (t.sla_deadlines || []).length > 0 && <div className="flex flex-wrap gap-1.5">{(t.sla_deadlines || []).map((d) => <SlaBadge key={d.id} deadline={d} />)}</div>}
               </div>
             </div>
           </Link>

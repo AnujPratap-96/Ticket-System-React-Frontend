@@ -82,12 +82,12 @@ const RichEditor = forwardRef(function RichEditor({ value, onChange, placeholder
   return (
     <div className={`rounded-lg border ${border}`}>
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-2 py-1.5">
-        <div className="flex items-center gap-0.5" role="toolbar" aria-label="Formatting">
+        <div className="flex items-center gap-0.5 overflow-x-auto max-w-full pb-0.5" role="toolbar" aria-label="Formatting">
           {TOOLS.map((t) => (
-            <button key={t.key} type="button" title={t.label} aria-label={t.label} disabled={tab !== 'write'} onClick={() => apply(t)} className="p-1.5 rounded text-slate-600 hover:bg-slate-100 disabled:opacity-30"><t.icon className="w-4 h-4" aria-hidden="true" /></button>
+            <button key={t.key} type="button" title={t.label} aria-label={t.label} disabled={tab !== 'write'} onClick={() => apply(t)} className="p-1.5 rounded text-slate-600 hover:bg-slate-100 disabled:opacity-30 shrink-0"><t.icon className="w-4 h-4" aria-hidden="true" /></button>
           ))}
         </div>
-        <div className="flex gap-1" role="tablist" aria-label="Editor mode">{tabBtn('write', 'Write')}{tabBtn('preview', 'Preview')}</div>
+        <div className="flex gap-1 shrink-0" role="tablist" aria-label="Editor mode">{tabBtn('write', 'Write')}{tabBtn('preview', 'Preview')}</div>
       </div>
       {tab === 'write' ? (
         <textarea ref={area} aria-label={ariaLabel} rows={rows} maxLength={maxLength} value={value} onChange={(e) => onChange(e.target.value)} onKeyDown={onKey} onPaste={onPaste} placeholder={placeholder}
