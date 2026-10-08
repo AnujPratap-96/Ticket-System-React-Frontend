@@ -1,0 +1,17 @@
+export default {
+  'nav.tickets': 'Tickets', 'nav.analytics': 'Analíticas', 'nav.replies': 'Respuestas', 'nav.manage': 'Gestionar',
+  'nav.myTickets': 'Mis tickets', 'nav.createTicket': 'Crear ticket', 'nav.helpCenter': 'Centro de ayuda', 'nav.supportPlan': 'Plan de soporte',
+  'nav.myAccount': 'Mi cuenta', 'nav.signOut': 'Cerrar sesión', 'nav.supportCenter': 'Centro de soporte',
+  'status.open': 'Abierto', 'status.in_progress': 'En curso', 'status.pending_customer': 'Esperando al cliente', 'status.resolved': 'Resuelto', 'status.closed': 'Cerrado',
+  'priority.low': 'Baja', 'priority.medium': 'Media', 'priority.high': 'Alta', 'priority.urgent': 'Urgente',
+  'common.save': 'Guardar', 'common.cancel': 'Cancelar', 'common.loading': 'Cargando…', 'common.search': 'Buscar', 'common.language': 'Idioma', 'common.theme': 'Cambiar tema',
+  'common.previous': 'Anterior', 'common.next': 'Siguiente', 'common.allStatuses': 'Todos los estados',
+  'login.title': 'Inicia sesión en tu cuenta', 'login.email': 'Correo electrónico', 'login.password': 'Contraseña', 'login.signIn': 'Iniciar sesión', 'login.forgot': '¿Olvidaste tu contraseña?',
+  'login.newCustomer': '¿Cliente nuevo?', 'login.createAccount': 'Crear una cuenta', 'login.browseHelp': 'Ver el centro de ayuda',
+  'portal.myTickets': 'Mis tickets', 'portal.companyTickets': 'Tickets de la empresa', 'portal.empty': 'Todavía no tienes tickets.', 'portal.createFirst': 'Crea tu primer ticket',
+  'portal.wholeCompany': 'Toda la empresa', 'portal.onlyMine': 'Solo los míos',
+  'new.title': 'Crear ticket', 'new.intro': 'Cuéntanos en qué necesitas ayuda y te responderemos por correo.', 'new.department': 'Departamento', 'new.urgency': '¿Qué tan urgente es?',
+  'new.subject': 'Asunto', 'new.message': 'Mensaje', 'new.attachments': 'Adjuntos', 'new.submit': 'Enviar ticket', 'new.submitting': 'Enviando…',
+  'ticket.reply': 'Responder', 'ticket.send': 'Enviar', 'ticket.you': 'Tú',
+  'help.title': '¿Cómo podemos ayudarte?', 'help.search': 'Buscar artículos…', 'help.all': 'Todos', 'help.helpful': '¿Te resultó útil este artículo?', 'help.yes': 'Sí', 'help.no': 'No',
+};

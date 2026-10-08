@@ -1,0 +1,17 @@
+export default {
+  'nav.tickets': 'टिकट', 'nav.analytics': 'विश्लेषण', 'nav.replies': 'तैयार उत्तर', 'nav.manage': 'प्रबंधन',
+  'nav.myTickets': 'मेरे टिकट', 'nav.createTicket': 'टिकट बनाएँ', 'nav.helpCenter': 'सहायता केंद्र', 'nav.supportPlan': 'सपोर्ट प्लान',
+  'nav.myAccount': 'मेरा खाता', 'nav.signOut': 'साइन आउट', 'nav.supportCenter': 'सपोर्ट सेंटर',
+  'status.open': 'खुला', 'status.in_progress': 'प्रगति में', 'status.pending_customer': 'ग्राहक के उत्तर की प्रतीक्षा', 'status.resolved': 'हल हुआ', 'status.closed': 'बंद',
+  'priority.low': 'कम', 'priority.medium': 'मध्यम', 'priority.high': 'उच्च', 'priority.urgent': 'अत्यावश्यक',
+  'common.save': 'सहेजें', 'common.cancel': 'रद्द करें', 'common.loading': 'लोड हो रहा है…', 'common.search': 'खोजें', 'common.language': 'भाषा', 'common.theme': 'थीम बदलें',
+  'common.previous': 'पिछला', 'common.next': 'अगला', 'common.allStatuses': 'सभी स्थितियाँ',
+  'login.title': 'अपने खाते में साइन इन करें', 'login.email': 'ईमेल', 'login.password': 'पासवर्ड', 'login.signIn': 'साइन इन', 'login.forgot': 'पासवर्ड भूल गए?',
+  'login.newCustomer': 'नए ग्राहक?', 'login.createAccount': 'खाता बनाएँ', 'login.browseHelp': 'सहायता केंद्र देखें',
+  'portal.myTickets': 'मेरे टिकट', 'portal.companyTickets': 'कंपनी के टिकट', 'portal.empty': 'आपका अभी कोई टिकट नहीं है।', 'portal.createFirst': 'अपना पहला टिकट बनाएँ',
+  'portal.wholeCompany': 'पूरी कंपनी', 'portal.onlyMine': 'सिर्फ़ मेरे',
+  'new.title': 'टिकट बनाएँ', 'new.intro': 'बताइए आपको किस चीज़ में मदद चाहिए, हम ईमेल से जवाब देंगे।', 'new.department': 'विभाग', 'new.urgency': 'यह कितना ज़रूरी है?',
+  'new.subject': 'विषय', 'new.message': 'संदेश', 'new.attachments': 'अटैचमेंट', 'new.submit': 'टिकट जमा करें', 'new.submitting': 'जमा हो रहा है…',
+  'ticket.reply': 'उत्तर', 'ticket.send': 'भेजें', 'ticket.you': 'आप',
+  'help.title': 'हम आपकी कैसे मदद करें?', 'help.search': 'लेख खोजें…', 'help.all': 'सभी', 'help.helpful': 'क्या यह लेख उपयोगी था?', 'help.yes': 'हाँ', 'help.no': 'नहीं',
+};

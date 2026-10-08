@@ -1,0 +1,17 @@
+export default {
+  'nav.tickets': 'Tickets', 'nav.analytics': 'Analytics', 'nav.replies': 'Replies', 'nav.manage': 'Manage',
+  'nav.myTickets': 'My tickets', 'nav.createTicket': 'Create ticket', 'nav.helpCenter': 'Help center', 'nav.supportPlan': 'Support plan',
+  'nav.myAccount': 'My account', 'nav.signOut': 'Sign out', 'nav.supportCenter': 'Support Center',
+  'status.open': 'Open', 'status.in_progress': 'In progress', 'status.pending_customer': 'Waiting for customer', 'status.resolved': 'Resolved', 'status.closed': 'Closed',
+  'priority.low': 'Low', 'priority.medium': 'Medium', 'priority.high': 'High', 'priority.urgent': 'Urgent',
+  'common.save': 'Save', 'common.cancel': 'Cancel', 'common.loading': 'Loading…', 'common.search': 'Search', 'common.language': 'Language', 'common.theme': 'Switch theme',
+  'common.previous': 'Previous', 'common.next': 'Next', 'common.allStatuses': 'All statuses',
+  'login.title': 'Sign in to your account', 'login.email': 'Email', 'login.password': 'Password', 'login.signIn': 'Sign in', 'login.forgot': 'Forgot password?',
+  'login.newCustomer': 'New customer?', 'login.createAccount': 'Create an account', 'login.browseHelp': 'Browse the help center',
+  'portal.myTickets': 'My tickets', 'portal.companyTickets': 'Company tickets', 'portal.empty': 'You have no tickets yet.', 'portal.createFirst': 'Create your first ticket',
+  'portal.wholeCompany': 'Whole company', 'portal.onlyMine': 'Only mine',
+  'new.title': 'Create ticket', 'new.intro': 'Tell us what you need help with and we will get back to you by email.', 'new.department': 'Department', 'new.urgency': 'How urgent is it?',
+  'new.subject': 'Subject', 'new.message': 'Message', 'new.attachments': 'Attachments', 'new.submit': 'Submit ticket', 'new.submitting': 'Submitting…',
+  'ticket.reply': 'Reply', 'ticket.send': 'Send', 'ticket.you': 'You',
+  'help.title': 'How can we help?', 'help.search': 'Search articles…', 'help.all': 'All', 'help.helpful': 'Was this article helpful?', 'help.yes': 'Yes', 'help.no': 'No',
+};

@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+/* Toasts */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(16px) scale(0.98); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes toast-progress {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-toast], [data-toast-bar] { animation: none !important; }
+}
+
+/* ---------- Dark mode ----------
+   The screens use Tailwind's light palette directly, so dark mode remaps those few utilities
+   instead of touching every component. Toggled by the "dark" class on <html> (see ThemeToggle). */
+html.dark { color-scheme: dark; }
+.dark body { background-color: #0b1120; color: #e2e8f0; }
+.dark .bg-white { background-color: #111a2e; }
+.dark .bg-slate-50, .dark .bg-slate-50\/60, .dark .bg-slate-50\/70 { background-color: #0f172a; }
+.dark .bg-slate-100 { background-color: #1a2540; }
+.dark .bg-slate-200 { background-color: #243252; }
+.dark .hover\:bg-slate-50:hover { background-color: #17213a; }
+.dark .hover\:bg-slate-100:hover { background-color: #1f2b48; }
+.dark .border-slate-100 { border-color: #1a2540; }
+.dark .border-slate-200, .dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #25324f; }
+.dark .border-slate-300 { border-color: #334366; }
+.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #1d2946; }
+.dark .text-slate-900, .dark .text-slate-800 { color: #f1f5f9; }
+.dark .text-slate-700 { color: #cbd5e1; }
+.dark .text-slate-600, .dark .text-slate-500 { color: #94a3b8; }
+.dark .text-slate-400 { color: #7185a3; }
+.dark .placeholder\:text-slate-400::placeholder { color: #64748b; }
+.dark input, .dark select, .dark textarea { background-color: #0f172a; color: #e2e8f0; }
+.dark .shadow-sm, .dark .shadow-lg { box-shadow: 0 1px 2px rgba(0,0,0,.4); }
+/* tinted callouts keep their hue but lose the glare */
+.dark .bg-indigo-50, .dark .bg-indigo-50\/70 { background-color: rgba(99,102,241,.14); }
+.dark .bg-violet-50, .dark .bg-violet-50\/70 { background-color: rgba(139,92,246,.14); }
+.dark .bg-sky-50, .dark .bg-sky-50\/70 { background-color: rgba(14,165,233,.14); }
+.dark .bg-amber-50, .dark .bg-amber-50\/60 { background-color: rgba(245,158,11,.14); }
+.dark .bg-rose-50, .dark .bg-rose-50\/60 { background-color: rgba(244,63,94,.14); }
+.dark .bg-emerald-50 { background-color: rgba(16,185,129,.14); }
+.dark .border-indigo-100, .dark .border-violet-200, .dark .border-sky-200, .dark .border-amber-200, .dark .border-rose-200, .dark .border-rose-100, .dark .border-emerald-200 { border-color: rgba(148,163,184,.25); }
+.dark .text-indigo-700, .dark .text-indigo-600 { color: #a5b4fc; }
+.dark .text-violet-900, .dark .text-violet-700 { color: #c4b5fd; }
+.dark .text-sky-900, .dark .text-sky-800 { color: #7dd3fc; }
+.dark .text-amber-900, .dark .text-amber-800, .dark .text-amber-700 { color: #fcd34d; }
+.dark .text-rose-800, .dark .text-rose-700 { color: #fda4af; }
+.dark .text-emerald-700 { color: #6ee7b7; }
+.dark .bg-emerald-100, .dark .bg-amber-100, .dark .bg-rose-100, .dark .bg-sky-100, .dark .bg-indigo-100, .dark .bg-violet-100 { background-color: rgba(148,163,184,.18); }
+
+/* Landing page extras for dark mode */
+.dark .from-indigo-50 { --tw-gradient-from: #151d38 var(--tw-gradient-from-position); --tw-gradient-to: rgb(21 29 56 / 0) var(--tw-gradient-to-position); }
+.dark .to-white { --tw-gradient-to: #0b1120 var(--tw-gradient-to-position); }
+.dark .landing-cta { background-color: #e2e8f0; color: #0f172a; }
+.dark .landing-cta:hover { background-color: #fff; }
+.dark .hover\:text-slate-900:hover, .dark .hover\:text-slate-800:hover { color: #fff; }
+.dark .hover\:border-indigo-300:hover { border-color: #6366f1; }
+
+/* Staff top bar: navy in dark mode, white in light mode (it used to stay navy in both) */
+html:not(.dark) .staff-topbar { background-color: #fff; color: #0f172a; border-color: #e2e8f0; }
+html:not(.dark) .staff-topbar .text-slate-300, html:not(.dark) .staff-topbar .text-slate-200 { color: #475569; }
+html:not(.dark) .staff-topbar .hover\:text-white:hover { color: #0f172a; }
+html:not(.dark) .staff-topbar .hover\:bg-slate-800:hover { background-color: #f1f5f9; }
+html:not(.dark) .staff-topbar select { background-color: #fff; color: #475569; border-color: #cbd5e1; }
+html:not(.dark) .staff-topbar span.bg-indigo-600 { color: #fff; }
+
+/* Formatted message bodies (server-sanitised HTML) */
+.rich p { margin: 0 0 .6em; }
+.rich p:last-child, .rich ul:last-child, .rich ol:last-child { margin-bottom: 0; }
+.rich ul { list-style: disc; padding-left: 1.4em; margin: 0 0 .6em; }
+.rich ol { list-style: decimal; padding-left: 1.4em; margin: 0 0 .6em; }
+.rich a { color: #4f46e5; text-decoration: underline; }
+.rich blockquote { border-left: 3px solid #cbd5e1; margin: 0 0 .6em; padding-left: .8em; color: #475569; }
+.rich code { background: #f1f5f9; border-radius: 4px; padding: .1em .35em; font-size: .9em; }
+.rich pre { background: #f1f5f9; border-radius: 8px; padding: .6em .8em; overflow-x: auto; margin: 0 0 .6em; }
+.dark .rich code, .dark .rich pre { background: #1a2540; }
+.dark .rich blockquote { border-color: #334366; color: #94a3b8; }
+.dark .rich a { color: #a5b4fc; }
