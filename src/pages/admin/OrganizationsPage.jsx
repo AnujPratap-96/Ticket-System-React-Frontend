@@ -96,6 +96,7 @@ export default function OrganizationsPage() {
   const [form, setForm] = useState(null); // null | {} | org
   const [open, setOpen] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(null);
 
   const load = useCallback(async () => {
     try {
@@ -111,6 +112,18 @@ export default function OrganizationsPage() {
       toast.success(r.data.message, r.data.attached ? 'Customers added' : 'Nothing to add');
       load();
     } catch (e) { toast.error(errorMessage(e)); }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleting) return;
+    try {
+      const r = await api.delete(`/organizations/${deleting.id}`);
+      toast.success(r.data.message || 'Organization deleted');
+      setDeleting(null);
+      load();
+    } catch (e) {
+      toast.error(errorMessage(e));
+    }
   };
 
   return (
@@ -146,11 +159,27 @@ export default function OrganizationsPage() {
               <span className="text-xs text-slate-600">{o.tickets_count} {o.tickets_count === 1 ? 'ticket' : 'tickets'}</span>
               <button onClick={() => attach(o)} className="text-xs font-semibold text-indigo-600 hover:underline" title="Link existing customers whose email is on this domain">Add matching customers</button>
               <button onClick={() => setForm(o)} className="text-xs font-semibold text-slate-600 hover:underline">Edit</button>
+              <button onClick={() => setDeleting(o)} className="text-xs font-semibold text-rose-600 hover:underline">Delete</button>
             </div>
             {open === o.id && <div className="bg-slate-50/70 border-t border-slate-100"><CustomersPanel org={o} /></div>}
           </div>
         ))}
       </div>
+
+      {deleting && (
+        <Modal title={`Delete ${deleting.name}?`} onClose={() => setDeleting(null)}>
+          <div className="space-y-4">
+            <p className="text-sm text-slate-600">
+              Are you sure you want to delete the organization <strong>{deleting.name}</strong> (@{deleting.domain})?
+              Any linked customers and tickets will have their organization unlinked. This cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button type="button" onClick={() => setDeleting(null)} className="px-4 py-2 text-sm rounded-xl border border-slate-300 hover:bg-slate-50">Cancel</button>
+              <button onClick={confirmDelete} className="px-4 py-2 text-sm rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold">Delete organization</button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {form && <OrgForm initial={form.id ? form : null} onClose={() => setForm(null)} onSaved={() => { setForm(null); load(); }} />}
     </div>

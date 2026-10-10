@@ -108,7 +108,7 @@ export default function AssistantWidget() {
       </button>
 
       {open && (
-        <section role="dialog" aria-label="Support assistant" className="fixed bottom-16 sm:bottom-20 inset-x-2 sm:inset-x-auto sm:right-5 z-50 sm:w-[400px] h-[calc(100dvh-5.5rem)] sm:h-[560px] max-h-[640px] bg-white border border-slate-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <section role="dialog" aria-label="Support assistant" className="fixed bottom-16 sm:bottom-20 inset-x-2 sm:inset-x-auto sm:right-5 z-50 sm:w-[400px] h-[calc(100dvh-5.5rem)] sm:h-[min(540px,calc(100vh-6.5rem))] max-h-[calc(100dvh-5.5rem)] bg-white border border-slate-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
           <header className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="bg-white/20 p-1.5 rounded-lg"><Bot className="w-5 h-5" /></span>

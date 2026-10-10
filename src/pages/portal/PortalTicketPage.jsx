@@ -60,6 +60,11 @@ export default function PortalTicketPage() {
   };
 
   const move = async (status) => {
+    if (status === 'closed') {
+      if (!window.confirm('Are you sure you want to close this ticket? Once closed, you will need to open a new ticket if the issue persists.')) {
+        return;
+      }
+    }
     try {
       await api.patch(`/tickets/${id}/status`, { status });
       toast.success(status === 'closed' ? 'This ticket is now closed. Create a new one if the problem returns.' : 'We have reopened your ticket and the team has been notified.', status === 'closed' ? 'Ticket closed' : 'Ticket reopened');
@@ -73,7 +78,7 @@ export default function PortalTicketPage() {
   if (!ticket) return <div className="p-8 text-center text-slate-500">Loading…</div>;
 
   const moves = allowedTransitions('customer', ticket.status);
-  const closed = ticket.status === 'closed';
+  const closed = ticket.status === 'closed' || Boolean(ticket.merged_into);
 
   return (
     <div className="space-y-4">
@@ -85,10 +90,19 @@ export default function PortalTicketPage() {
         </div>
         <div className="flex items-center gap-2">
           <StatusBadge status={ticket.status} />
-          {moves.includes('closed') && <button onClick={() => move('closed')} className="text-xs px-3 py-1.5 rounded-lg border border-slate-300 font-semibold">Close ticket</button>}
-          {moves.includes('in_progress') && ticket.status === 'resolved' && <button onClick={() => move('in_progress')} className="text-xs px-3 py-1.5 rounded-lg border border-indigo-300 text-indigo-700 font-semibold">Reopen</button>}
+          {!ticket.merged_into && moves.includes('closed') && <button onClick={() => move('closed')} className="text-xs px-3 py-1.5 rounded-lg border border-slate-300 font-semibold">Close ticket</button>}
+          {!ticket.merged_into && moves.includes('in_progress') && ticket.status === 'resolved' && <button onClick={() => move('in_progress')} className="text-xs px-3 py-1.5 rounded-lg border border-indigo-300 text-indigo-700 font-semibold">Reopen</button>}
         </div>
       </div>
+
+      {ticket.merged_into && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-3 text-sm flex items-center gap-2">
+          <span>This ticket was merged into</span>
+          <Link className="font-semibold underline text-amber-950" to={`/portal/tickets/${ticket.merged_into.id}`}>
+            {ticket.merged_into.ticket_number || 'primary ticket'}
+          </Link>.
+        </div>
+      )}
 
       <div className="bg-white border border-slate-200 rounded-xl p-4">
         <div className="text-xs text-slate-500 mb-1">{ticket.customer?.id === user.id ? 'You' : ticket.customer?.name} · {fmt(ticket.created_at)}</div>
@@ -108,7 +122,9 @@ export default function PortalTicketPage() {
       {['resolved', 'closed'].includes(ticket.status) && <RatingBox ticketId={ticket.id} existing={ticket.rating} onRated={load} />}
 
       {closed ? (
-        <div className="text-sm text-slate-500 bg-slate-100 rounded-lg p-3">This ticket is closed. Create a new ticket if you need more help.</div>
+        <div className="text-sm text-slate-500 bg-slate-100 rounded-lg p-3">
+          {ticket.merged_into ? 'This ticket has been merged into another ticket.' : 'This ticket is closed. Create a new ticket if you need more help.'}
+        </div>
       ) : (
         <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3">
           <RichEditor ariaLabel="Reply" value={body} onChange={setBody} maxLength={20000} placeholder="Write a reply…"

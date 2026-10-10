@@ -77,7 +77,6 @@ export default function TeamPage() {
   const [loading, setLoading] = useState(true);
   const [roleFilter, setRoleFilter] = useState('');
   const [erasing, setErasing] = useState(null);
-  const [confirmEmail, setConfirmEmail] = useState('');
 
   const load = useCallback(async () => {
     try {
@@ -106,13 +105,11 @@ export default function TeamPage() {
     }
   };
 
-  const erase = async (e) => {
-    e.preventDefault();
+  const erase = async () => {
     try {
-      const res = await api.post(`/users/${erasing.id}/erase`, { confirm_email: confirmEmail });
-      toast.success(res.data.message, 'Account erased');
+      const res = await api.delete(`/users/${erasing.id}`);
+      toast.success(res.data.message || 'User removed');
       setErasing(null);
-      setConfirmEmail('');
       load();
     } catch (err) {
       toast.error(errorMessage(err));
@@ -163,20 +160,15 @@ export default function TeamPage() {
                 </td>
                 <td className="p-3">
                   {m.invite_status ? <span className={m.invite_status === 'expired' ? 'text-rose-700' : 'text-amber-700'}>{m.invite_status === 'expired' ? 'Invite expired' : 'Invited'}</span>
-                    : m.is_active ? <span className="text-emerald-700">Active</span> : <span className="text-rose-700">Deactivated</span>}
+                    : m.is_active ? <span className="text-emerald-700">Active</span> : <span className="text-rose-700 font-medium">Suspended</span>}
                 </td>
                 <td className="p-3 text-right whitespace-nowrap">
                   {isAdmin && (
                     <>
                       {m.invite_status && <button onClick={() => patch(m, `/users/${m.id}/resend-invite`, null, 'A new invitation was sent', 'post')} className="text-amber-700 font-semibold mr-3">Resend invite</button>}
                       <button onClick={() => setForm(m)} className="text-indigo-600 font-semibold mr-3">Edit</button>
-                      {m.id !== user.id && (
-                        <button onClick={() => { setErasing(m); setConfirmEmail(''); }} className="text-slate-500 hover:text-rose-700 font-semibold mr-3">Erase</button>
-                      )}
-                      {m.id !== user.id && (
-                        <button onClick={() => patch(m, `/users/${m.id}`, { is_active: !m.is_active }, m.is_active ? 'User deactivated' : 'User reactivated')} className={m.is_active ? 'text-rose-600 font-semibold' : 'text-emerald-600 font-semibold'}>
-                          {m.is_active ? 'Deactivate' : 'Reactivate'}
-                        </button>
+                      {m.id !== user.id && m.is_active && (
+                        <button onClick={() => setErasing(m)} className="text-rose-600 hover:text-rose-700 font-semibold">Delete</button>
                       )}
                     </>
                   )}
@@ -189,17 +181,17 @@ export default function TeamPage() {
       </div>
 
       {erasing && (
-        <Modal title={`Erase ${erasing.name}?`} onClose={() => setErasing(null)}>
-          <form onSubmit={erase} className="space-y-4">
-            <p className="text-sm text-slate-600">This removes the person's name, email, photo and sign-ins for good{erasing.role === 'customer' ? ', and deletes the text they wrote in tickets' : ', and returns their tickets to the unassigned pool'}. This cannot be undone.</p>
-            <label className="block text-sm font-medium text-slate-700">Type <strong>{erasing.email}</strong> to confirm
-              <input required autoFocus className="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" value={confirmEmail} onChange={(e) => setConfirmEmail(e.target.value)} />
-            </label>
-            <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setErasing(null)} className="px-4 py-2 text-sm rounded-lg border border-slate-300">Cancel</button>
-              <button disabled={confirmEmail.toLowerCase() !== erasing.email.toLowerCase()} className="px-4 py-2 text-sm rounded-lg bg-rose-600 text-white font-semibold disabled:opacity-50">Erase permanently</button>
+        <Modal title={`Delete ${erasing.name}?`} onClose={() => setErasing(null)}>
+          <div className="space-y-4">
+            <p className="text-sm text-slate-600">
+              Are you sure you want to delete <strong>{erasing.name}</strong> ({erasing.email})?
+              If this user has tickets or activity, their record is preserved with status <strong>Suspended</strong> to maintain ticket history. They will no longer be able to log in.
+            </p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button type="button" onClick={() => setErasing(null)} className="px-4 py-2 text-sm rounded-lg border border-slate-300 hover:bg-slate-50">Cancel</button>
+              <button onClick={erase} className="px-4 py-2 text-sm rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold">Delete user</button>
             </div>
-          </form>
+          </div>
         </Modal>
       )}
       {form && <UserForm departments={departments} initial={form.id ? form : null} onClose={() => setForm(null)} onSaved={() => { setForm(null); load(); }} />}
