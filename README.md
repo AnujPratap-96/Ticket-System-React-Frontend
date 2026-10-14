@@ -1,16 +1,18 @@
 <p align="center">
-  <h1 align="center">DeskFlow - Customer Support & Staff Console Frontend</h1>
-  <p align="center">A high-performance React 19 + Vite single-page application delivering an enterprise customer support portal, real-time staff ticketing console, public knowledge base, and administrative suites.</p>
+  <h1 align="center">DeskFlow - Support Portal & Staff Console (Frontend)</h1>
+  <p align="center">A React 19 + Vite single-page app for the multi-tenant DeskFlow helpdesk: a customer portal, a staff console, a public help center, workspace sign-up and a platform console, with live updates, push notifications, dark mode and three languages.</p>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white" />
-  <img src="https://img.shields.io/badge/Vite-6-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
+  <img src="https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
   <img src="https://img.shields.io/badge/TailwindCSS-3.4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" />
   <img src="https://img.shields.io/badge/React_Router-7-CA4245?style=for-the-badge&logo=reactrouter&logoColor=white" />
-  <img src="https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white" />
-  <img src="https://img.shields.io/badge/Lucide_Icons-F107A3?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Playwright-E2E-2EAD33?style=for-the-badge&logo=playwright&logoColor=white" />
 </p>
+
+> The back end is [`../deskflow-api`](../deskflow-api). System-level diagrams (request flow, multi-tenancy, realtime, data model) are in [`../ARCHITECTURE.md`](../ARCHITECTURE.md).
 
 ---
 
@@ -18,175 +20,131 @@
 
 - [Overview](#overview)
 - [Feature Set](#feature-set)
-  - [1. Authentication & Session Security](#1-authentication--session-security)
-  - [2. Application Shell & Responsive Layout](#2-application-shell--responsive-layout)
-  - [3. Public Help Center & Articles](#3-public-help-center--articles)
-  - [4. Customer Support Portal](#4-customer-support-portal)
-  - [5. Staff Ticketing Console & Queue Management](#5-staff-ticketing-console--queue-management)
-  - [6. Ticket Conversation & Collaboration](#6-ticket-conversation--collaboration)
-  - [7. Real-Time Streaming & Presence Detection](#7-real-time-streaming--presence-detection)
-  - [8. Floating AI Assistant Widget](#8-floating-ai-assistant-widget)
-  - [9. Direct-to-Cloudinary File Attachments](#9-direct-to-cloudinary-file-attachments)
-  - [10. Team Lead & Administrative Suites](#10-team-lead--administrative-suites)
-  - [11. User Profile & Two-Factor Authentication](#11-user-profile--two-factor-authentication)
-  - [12. Visual Feedback & Toast System](#12-visual-feedback--toast-system)
+  - [1. Workspaces (multi-tenancy in the browser)](#1-workspaces-multi-tenancy-in-the-browser)
+  - [2. Authentication and Sessions](#2-authentication-and-sessions)
+  - [3. Customer Portal](#3-customer-portal)
+  - [4. Staff Console](#4-staff-console)
+  - [5. Ticket Workbench](#5-ticket-workbench)
+  - [6. Administration](#6-administration)
+  - [7. Platform Console](#7-platform-console)
+  - [8. Realtime, Push and Installable App](#8-realtime-push-and-installable-app)
+  - [9. AI Assistant and AI Helpers](#9-ai-assistant-and-ai-helpers)
+  - [10. Account, Security and Privacy](#10-account-security-and-privacy)
+  - [11. Look and Feel](#11-look-and-feel)
 - [Tech Stack](#tech-stack)
 - [Routes & Access Matrix](#routes--access-matrix)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
 - [Environment Variables](#environment-variables)
-- [Available Scripts](#available-scripts)
-- [Architecture & Key Design Decisions](#architecture--key-design-decisions)
-- [Deployment (Vercel & Docker)](#deployment-vercel--docker)
+- [Scripts](#scripts)
+- [Testing](#testing)
+- [Design Decisions](#design-decisions)
+- [Deployment](#deployment)
+- [Known Limits](#known-limits)
 
 ---
 
 ## Overview
 
-**DeskFlow Frontend** is the official single-page web client for the DeskFlow Enterprise support platform. Built with React 19, Vite, Tailwind CSS, and React Router 7, it connects to the [DeskFlow API](../deskflow-api) to deliver high-speed customer self-service and high-efficiency staff workflows.
+The app serves three kinds of people and chooses the experience from who signs in:
 
-The application automatically segments experiences based on user credentials:
-- **Unauthenticated Guests:** Explore landing resources, search knowledge base articles, and chat with the AI assistant.
-- **Customers (`/portal`):** Submit support requests, track conversations, upload screenshots, monitor SLA targets, and manage company tickets.
-- **Support Staff (`/staff`):** Access a high-throughput ticketing console with saved views, canned replies, live collision warnings, AI triage suggestions, and administrative controls.
+- **Guests:** the landing page, the help center, the AI assistant, sign-in, customer sign-up, "find your workspace" and "create a workspace".
+- **Customers (`/portal`):** file and follow tickets, upload screenshots, rate support, see their plan and limits.
+- **Staff (`/staff`):** agents, team leads and administrators. What they see is decided by their role, and the API enforces every rule; hiding a screen is only courtesy.
+- **Platform owner (`/platform`):** manages workspaces (companies) and sees counts only.
+
+Because DeskFlow is multi-tenant, every browser talks to **one workspace** (one company's support desk).
 
 ---
 
 ## Feature Set
 
-### 1. Authentication & Session Security
+### Who belongs where
 
-Comprehensive multi-screen identity flows:
+There are three levels, and every account sits at exactly one of them.
 
-| Route | View | Description |
-|---|---|---|
-| `/login` | Sign In | Email and password authentication with optional TOTP 2FA challenge handling |
-| `/register` | Registration | Customer signup with 6-digit email OTP verification |
-| `/forgot-password` | Password Recovery | Multi-step OTP recovery flow resetting passwords across all active sessions |
-| `/accept-invite` | Staff Invitation | Token-authenticated onboarding allowing invited staff to set their credentials |
+```
+PLATFORM            the DeskFlow installation itself (one platform owner, platform@deskflow.com)
+│                   creates, suspends and deletes workspaces; sees counts only, never tickets
+│
+├── WORKSPACE "TechCorp Support"     one company that RUNS a helpdesk (a tenant)
+│   ├── STAFF                        admin, leads, agents: they work for the workspace and have no organization
+│   └── CUSTOMER COMPANIES           "organizations": the workspace's clients (Acme, Globex ...)
+│        └── customers               people from those companies who file tickets
+│
+└── WORKSPACE "ShopEase Support"     a second company, completely separate (its own staff, clients, tickets)
+```
 
-- **Bearer Token Management:** Authenticated tokens are stored securely in `localStorage` with sanitized base URL normalization to prevent double-slash (`//`) API anomalies.
-- **Session Expiry Guard:** Intelligent 401 handling invalidates expired sessions without firing false alerts on initial cold boots.
-- **Role Routing:** Customers are automatically routed to `/portal`, while staff members (`agent`, `lead`, `admin`) are directed to `/staff`.
+Think of a shopping mall: the **platform** is the mall owner (rents out shops, never looks inside), a **workspace** is one shop, **staff** are the shop's employees (the admin is the manager), **organizations** are the shop's business customers, and a **ticket** is a customer's request. A workspace admin belongs to their workspace, not to the platform and not to any customer company, so their "organization" is empty. The platform owner is a separate account that belongs to no workspace.
 
----
+### 1. Workspaces (multi-tenancy in the browser)
 
-### 2. Application Shell & Responsive Layout
+- The workspace is found from, in order: the address (`acme.yourdomain.com`, when `VITE_TENANT_BASE_DOMAIN` is set), a `?tenant=acme` link (emailed links carry it, and it is remembered), the last choice stored in the browser, then `VITE_DEFAULT_TENANT` (development). Axios sends it as the `X-Tenant` header.
+- If the server cannot tell which workspace is meant, the app opens **`/workspace`** ("Find your workspace"); an unknown address clears the stored choice and asks again.
+- **`/start`**: a company creates its own workspace (name, address with a live "available?" check, administrator, then the emailed code). 
+- The sign-in page, the staff header and the portal show the workspace's name, with "Change workspace".
+- With a single workspace on the server none of this appears.
 
-Fluid, accessible user interfaces designed for speed and mobile responsiveness:
+### 2. Authentication and Sessions
 
-- **Adaptive Navigation:** Mobile-optimized drawer menus, breadcrumb trails, and quick-action toolbars.
-- **Notification Bell:** Live polling (30s) and WebSocket notifications for ticket updates, SLA warnings, and @mentions.
-- **Code Splitting:** The heavy staff console and administrative suites are lazy-loaded on demand, ensuring customer-facing pages load near-instantaneously.
-- **Theme & Typography:** Tailored design system with custom CSS variables, status badges, and accessible focus states.
+| Route | Purpose |
+|---|---|
+| `/login` | Email and password, with the two-factor challenge when enabled |
+| `/register` | Customer sign-up with an emailed 6-digit code |
+| `/forgot-password` | Reset with an emailed code (signs out every device) |
+| `/accept-invite` | Staff invitation: choose your own password |
+| `/platform/login` | Platform owner sign-in |
 
----
+The bearer token is kept in `localStorage`. A `401` signs the person out with a message (not during the first load). Realtime connections are closed on sign-out.
 
-### 3. Public Help Center & Articles
+### 3. Customer Portal
 
-Searchable knowledge repository for customer self-service:
+- **Tickets** with status filters; **company admins** switch between "Whole company" and "Only mine".
+- **New ticket**: department, urgency, subject, message, **department-specific extra questions**, drag/paste/browse attachments (progress bars, size and type checks), help-article suggestions while typing, and a warning when the person already has a similar open ticket.
+- **Conversation** with formatted replies, attachments, close/reopen and a 1-5 star rating when resolved.
+- **Support plan** page: response/resolution targets, performance over 90 days, and the company's plan limits with usage bars.
+- Plan limits and rate limits surface as plain messages ("Your company's plan allows 100 tickets per month…").
 
-- **Article Browser:** Clean category navigation and markdown article rendering.
-- **Instant Search:** Debounced full-text search with fallback to AI semantic matching when keyword queries return zero hits.
-- **Feedback Collection:** Interactive "Was this helpful?" voting on published articles to measure effectiveness.
+### 4. Staff Console
 
----
+- **Ticket queue** with search, status/priority/tag filters, "assigned to me", **saved views** (your own named filters), **bulk actions** (status, priority, assign to me) and live SLA countdown badges. Urgent and "customer sounds upset" flags appear on rows.
+- **Analytics** (lead/admin): SLA compliance, trend chart, agent workload and a customer satisfaction panel (per day, per agent, low ratings to follow up).
+- **Replies** (canned responses), a **Manage** menu for team, help articles and admin tools.
 
-### 4. Customer Support Portal
+### 5. Ticket Workbench
 
-Dedicated workspace for end users and corporate clients (`/portal`):
+- Conversation, internal notes (amber, staff only), SLA clocks, audit log, priority/status/assignment, tags, watch, merge.
+- **Reply box:** a formatting toolbar (bold, italic, link, lists, quote, code), a **Write / Preview** tab (the preview is rendered by the API, so it is exactly what the customer gets), and an **"Add my signature"** switch that writes the signature into the box itself.
+- **Canned replies** insert above the signature (`{{customer_name}}`, `{{agent_name}}`, `{{agent_title}}`, `{{signature}}`); **mentions**, **translate** (reply and customer messages), **AI draft** and **AI summary**.
+- **Insights panel:** the AI's suggested priority/tags (apply or dismiss), duplicate suggestions with a merge shortcut, urgency/mood flags.
+- **Live collision warning** when a teammate is typing on the same ticket.
 
-- **Ticket Submission:** Dynamic department-specific ticket creation forms supporting custom fields.
-- **Conversation Timeline:** Real-time message feeds displaying customer messages, staff replies, and file attachments.
-- **Ticket Lifecycle Actions:** Customers can close resolved tickets or reopen conversations as needed.
-- **CSAT Rating:** Inline satisfaction feedback modal prompting customers to rate resolved tickets (1–5 stars with review text).
-- **Company Ticket Overview:** Corporate administrators can view, search, and manage all tickets submitted across their company's email domain.
+### 6. Administration
 
----
+Organizations (plan, limits and usage bars, company admins, move-tickets-on-delete), **Team** (invite by email, suspend/reactivate, delete, roles, capacity), **Departments** (hours, timezone, ticket-form builder), holidays, SLA policies, **Automation** rules, **Integrations** (Slack, Teams, signed webhooks), help-article editor with analytics, **Usage and limits**, AI settings and the global audit log.
 
-### 5. Staff Ticketing Console & Queue Management
+### 7. Platform Console
 
-High-volume productivity workbench for support teams (`/staff`):
+`/platform` (platform owner only): workspaces with staff, customer and ticket **counts**, create a workspace (and invite its first administrator), suspend and restore. No ticket or customer is ever shown.
 
-- **Saved Views & Custom Filters:** Fast tabbed switching across pre-configured ticket views (My Tickets, Unassigned, Pending, SLA At Risk).
-- **Live SLA Countdown Badges:** Visual countdown badges indicating time remaining until first-response and full-resolution deadlines.
-- **Bulk Operations:** Multi-select tickets to batch update assignment, status, or priority.
-- **Live Search & Sorting:** Instant filtering by customer, priority, department, tags, and status.
+### 8. Realtime, Push and Installable App
 
----
+- **Live updates:** Laravel Echo over Reverb on private channels (`user.{id}`, `ticket.{id}`, `ticket.{id}.staff`). Pings only trigger a re-fetch. If realtime is not configured or drops, screens simply poll (bell 30 s, customer ticket 20 s).
+- **Browser push:** "Turn on notifications" on the account page (service worker `public/sw.js`, VAPID key from the API). Failures explain themselves (blocked, no push service, and so on).
+- **Installable (PWA):** web manifest, icons and an offline page; the service worker caches only that page, never data.
 
-### 6. Ticket Conversation & Collaboration
+### 9. AI Assistant and AI Helpers
 
-Advanced conversation workbench designed to prevent agent collision:
+A floating assistant on public, portal and staff pages (hidden on platform and workspace-picker pages). Guests get help-centre answers; customers also their own tickets; staff ticket overviews by role. Staff also get triage suggestions, drafts, summaries and translation inside the workbench. If AI is off the buttons report that politely.
 
-- **Live Agent Presence:** Instant warning badges alert agents when a colleague is actively viewing or typing on the same ticket.
-- **Staff-Only Internal Notes:** Distinctly styled internal comments hidden from customer view for private team collaboration.
-- **Canned Responses:** Searchable shortcuts and macro replies with placeholder variable insertion.
-- **Tag Management & Watchers:** Add and remove operational tags and subscribe to ticket updates as a watcher.
-- **Ticket Merging:** Merge duplicate tickets with a preview modal re-routing messages into a primary ticket thread.
+### 10. Account, Security and Privacy
 
----
+Name and photo (direct to Cloudinary), **job title for the signature**, change password, **active sessions** (sign out any device), TOTP two-factor with recovery codes, push notifications, "Download my data" and, for customers, erase my account.
 
-### 7. Real-Time Streaming & Presence Detection
+### 11. Look and Feel
 
-Dual-layer synchronization maintaining parity with the backend:
-
-- **WebSocket Layer (Laravel Reverb):** Subscribes to private channels (`user.{id}`, `ticket.{id}`, `ticket.{id}.staff`) using Laravel Echo and Pusher JS.
-- **Graceful Polling Fallback:** If WebSockets are unavailable or disconnected, screens automatically continue refreshing through standard HTTP polling.
-- **Heartbeat Signals:** Active ticket screens dispatch a 15-second presence heartbeat to keep agent collision detection current.
-
----
-
-### 8. Floating AI Support Assistant
-
-Omnipresent floating chat bubble accessible across all portal and staff pages:
-
-- **Role-Aware Scoping:** 
-  - *Visitors:* Answers questions using published knowledge base articles.
-  - *Customers:* Can also query their open tickets and check ticket progress.
-  - *Staff:* Analyzes queues, drafts replies, and summarizes complex conversation threads.
-- **Inline Assistant Tools:** Dedicated staff buttons for "Draft Reply" and "Summarize Conversation" directly within the ticket editor.
-
----
-
-### 9. Direct-to-Cloudinary File Attachments
-
-Client-side media pipeline that eliminates server upload bottlenecks:
-
-- **Direct Uploads:** The browser retrieves a signed payload from the API and uploads binary files directly to Cloudinary using `XMLHttpRequest`.
-- **Live Progress Bars:** Accurate percentage upload progress indicators for end users.
-- **Validation:** Pre-upload validation for file extensions and maximum byte limits (10 MB for ticket attachments, 2 MB for avatars).
-
----
-
-### 10. Team Lead & Administrative Suites
-
-Management tools for operations and configuration:
-
-- **Analytics Dashboard (`/staff/analytics`):** Real-time SLA compliance charts, customer satisfaction scores, and agent workload distribution.
-- **Team Routing Controls (`/staff/team`):** Manage agent assignments, max capacity limits, and routing availability.
-- **Knowledge Base Editor (`/staff/kb`):** Author, publish, and review search analytics for documentation.
-- **System Administration:** Manage departments, custom ticket form fields, corporate holidays, SLA policy tiers, webhooks, and automation rules.
-
----
-
-### 11. User Profile & Two-Factor Authentication
-
-Personalized settings and security controls:
-
-- **Profile Customization:** Update display name and upload profile photos directly to Cloudinary.
-- **Two-Factor Enrolment:** Setup TOTP 2FA with generated QR codes and backup recovery codes.
-- **Active Device Management:** View all signed-in sessions with device details and revoke active logins remotely.
-- **GDPR Privacy Actions:** Customers can export their complete profile data or trigger self-service account erasure.
-
----
-
-### 12. Visual Feedback & Toast System
-
-Fluid notifications across all screen interactions:
-
-- **Top-Right Alerts:** Custom animated toasts confirming asynchronous actions (reply sent, status changed, exported, saved).
-- **Hover & Dismiss:** Toasts automatically pause when hovered and support manual dismissal.
+- **Light and dark mode** (a switch on every page, remembered per browser; light by default) and **English, Hindi and Spanish** for the main screens (navigation, sign-in, portal, help center). Other staff screens are English.
+- Toasts for important actions, responsive layouts down to phone width, lazy-loaded staff/admin bundles so customers download less, accessible labels and roles.
 
 ---
 
@@ -194,39 +152,32 @@ Fluid notifications across all screen interactions:
 
 | Layer | Technologies |
 |---|---|
-| **Core Framework** | React 19 · Vite 6 |
-| **Routing** | React Router 7 |
-| **Styling** | Tailwind CSS 3.4 · Custom Responsive Layouts |
-| **HTTP Client** | Axios (with token interception and error normalization) |
-| **Icons** | Lucide React |
-| **Realtime** | Laravel Echo · Pusher JS |
-| **Security & Utilities** | qrcode (TOTP 2FA) · Canvas Confetti |
-| **Code Quality** | Oxlint · Playwright E2E |
+| Framework | React 19, Vite 8 |
+| Routing | React Router 7 (`BrowserRouter`, lazy routes) |
+| Styling | Tailwind CSS 3.4 (+ a small dark-mode override layer in `index.css`) |
+| HTTP | Axios with token and workspace interceptors |
+| Realtime | Laravel Echo + Pusher protocol (Reverb) |
+| Icons / QR | lucide-react, qrcode (two-factor setup) |
+| Quality | oxlint, Playwright end-to-end tests |
 
 ---
 
 ## Routes & Access Matrix
 
-| Path | Access Level | Description |
+| Path | Who | Screen |
 |---|---|---|
-| `/` | Public | Landing page with knowledge base search |
-| `/login`, `/register`, `/forgot-password` | Guests | Account authentication and registration |
-| `/accept-invite` | Invited Staff | Staff invitation onboarding screen |
-| `/help`, `/help/:slug` | Public | Knowledge base categories and article viewer |
-| `/portal` | Customer | Customer ticket dashboard and support overview |
-| `/portal/new` | Customer | New ticket creation form |
-| `/portal/tickets/:id` | Customer | Customer conversation timeline and reply screen |
-| `/portal/account` | Customer | Personal profile, 2FA, and GDPR privacy settings |
-| `/staff` | Staff (`agent+`) | Ticket queue with saved views and bulk actions |
-| `/staff/tickets/:id` | Staff (`agent+`) | Complete ticket workbench, notes, and AI assistant |
-| `/staff/analytics` | `lead`, `admin` | Real-time SLA, CSAT, and workload analytics |
-| `/staff/team` | `lead`, `admin` | Agent roster, capacity, and routing controls |
-| `/staff/kb` | `lead`, `admin` | Knowledge base article management |
-| `/staff/departments` | `admin` | Department configurations and custom ticket fields |
-| `/staff/policies` | `admin` | Multi-tier SLA policy editor |
-| `/staff/automation` | `admin` | Trigger-based automation rule engine |
-| `/staff/integrations` | `admin` | Webhook management for external platforms |
-| `/staff/audit` | `admin` | Global immutable audit logs viewer |
+| `/` | everyone | Landing page with help-center search |
+| `/help`, `/help/:slug` | everyone | Help center and articles |
+| `/workspace`, `/start` | everyone | Find a workspace / create one |
+| `/login`, `/register`, `/forgot-password`, `/accept-invite` | signed out | Authentication |
+| `/platform/login` | signed out | Platform owner sign-in |
+| `/platform` | platform owner | Workspaces overview |
+| `/portal`, `/portal/new`, `/portal/tickets/:id`, `/portal/sla`, `/portal/account` | customers | Customer portal |
+| `/staff`, `/staff/tickets/:id`, `/staff/canned`, `/staff/account` | staff | Queue, workbench, replies, profile |
+| `/staff/analytics`, `/staff/team`, `/staff/kb` | lead, admin | Reporting, team, help articles |
+| `/staff/organizations`, `/staff/departments`, `/staff/holidays`, `/staff/policies`, `/staff/automation`, `/staff/integrations`, `/staff/usage`, `/staff/ai`, `/staff/audit`, `/staff/workspace`, `/staff/activity` | admin | Configuration (workspace settings: branding, email channel, security, export; admin activity) |
+
+Each side is redirected away from the other. **The API enforces every permission**; these guards are user experience.
 
 ---
 
@@ -234,134 +185,108 @@ Fluid notifications across all screen interactions:
 
 ```
 deskflow-frontend/
+├── e2e/                        # Playwright tests (auth, tickets, admin, workspaces)
+├── public/                     # sw.js, manifest.webmanifest, offline.html, icons, brand assets
 ├── src/
-│   ├── api/
-│   │   └── client.js              # Axios client, token store, and 401 interceptor
-│   ├── context/
-│   │   ├── AuthContext.jsx        # Auth state, session restoration, and 2FA
-│   │   └── ToastContext.jsx       # Global animated toast notification system
-│   ├── hooks/
-│   │   ├── useTicketPresence.js   # 15s agent collision heartbeat
-│   │   └── useSlaTimer.js         # Real-time countdown calculation
-│   ├── lib/
-│   │   ├── realtime.js            # Laravel Echo / Reverb integration
-│   │   ├── upload.js              # Direct-to-Cloudinary upload helper
-│   │   └── status.js              # State helpers and priority badge styles
+│   ├── api/client.js           # Axios: base URL, token, X-Tenant header, 401 and workspace handling
+│   ├── context/                # AuthContext, ToastContext, PreferencesContext (theme + language)
+│   ├── hooks/                  # useTicketPresence (15 s heartbeat), useSlaTimer
+│   ├── i18n/                   # en, hi, es dictionaries
+│   ├── lib/                    # tenant, realtime, push, signature, upload, download, shared helpers
 │   ├── components/
-│   │   ├── common/                # Modal, Dropdown, Avatar, PasswordInput, Badges
-│   │   ├── navigation/            # Topbar, Sidebar, NotificationBell
-│   │   ├── ticket/                # CannedResponses, Tags, Mentions, CollisionWarning
-│   │   ├── sla/                   # SlaBadge live countdown component
-│   │   └── assistant/             # Floating AssistantWidget component
+│   │   ├── assistant/          # Floating AI assistant
+│   │   ├── common/             # Modal, Dropdown, RichEditor, UsageBar, PreferenceControls, attachments ...
+│   │   ├── navigation/         # Topbar, NotificationBell
+│   │   ├── sla/                # SlaBadge
+│   │   └── ticket/             # InsightsPanel, MergeModal, TagEditor, CustomFields, FormBuilder, TranslateTool ...
 │   ├── pages/
-│   │   ├── landing/               # Public home & knowledge search
-│   │   ├── auth/                  # Login, Register, ForgotPassword, AcceptInvite
-│   │   ├── help/                  # Help center & article viewer
-│   │   ├── portal/                # Customer tickets, new ticket, account
-│   │   ├── staff/                 # Staff queues, analytics, team management
-│   │   ├── tickets/               # Detailed ticket conversation workbench
-│   │   └── admin/                 # Departments, SLA policies, webhooks, automation
-│   ├── App.jsx                    # Route definitions, guards, and lazy-loaded routes
-│   └── main.jsx                   # Application bootstrap
-├── public/                        # Static assets, branding, and favicon
-├── vercel.json                    # Single-page app routing rewrites for Vercel
-└── vite.config.js                 # Vite build and plugin configurations
+│   │   ├── landing/ help/ auth/ workspace/ platform/
+│   │   ├── portal/ staff/ tickets/ account/
+│   │   └── admin/              # Analytics, team, organizations, automation, integrations, usage ...
+│   ├── App.jsx                 # Routes, guards and lazy chunks
+│   └── main.jsx                # Bootstrap and service-worker registration
+├── Dockerfile, nginx.conf      # Static build served by nginx (alternative to Vercel)
+├── vercel.json                 # SPA rewrite
+└── playwright.config.js
 ```
 
 ---
 
 ## Getting Started
 
-### Prerequisites
+```bash
+cd deskflow-frontend
+npm ci
+cp .env.example .env     # set VITE_API_URL (and VITE_DEFAULT_TENANT=techcorp for the demo data)
+npm run dev              # http://localhost:5173
+```
 
-- Node.js 20+
-- npm 10+
-- Running instance of the [DeskFlow API](../deskflow-api)
-
-### Installation & Local Run
-
-1. **Navigate to the frontend folder:**
-   ```bash
-   cd deskflow/deskflow-frontend
-   ```
-
-2. **Install project dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Configure environment variables:**
-   ```bash
-   cp .env.example .env
-   ```
-   Ensure `VITE_API_URL` points to your backend:
-   ```env
-   VITE_API_URL=http://127.0.0.1:8000/api/v1
-   ```
-
-4. **Start the local Vite development server:**
-   ```bash
-   npm run dev
-   ```
-   Open [http://localhost:5173](http://localhost:5173) in your browser.
+Needs Node 20+ and a running API ([`../deskflow-api`](../deskflow-api)) seeded with `php artisan db:seed`. Demo logins are listed in the API README (password = the API's `DEMO_PASSWORD`, workspace `techcorp`).
 
 ---
 
 ## Environment Variables
 
+Vite bakes these in **at build time**; rebuild after changing them.
+
 | Variable | Default | Purpose |
 |---|---|---|
-| `VITE_API_URL` | `http://127.0.0.1:8000/api/v1` | Backend API base URL. *(Inlined at build time)* |
-| `VITE_REVERB_APP_KEY` | *(unset)* | Reverb / Pusher application key for live WebSockets |
-| `VITE_REVERB_HOST` | `window.location.hostname` | Reverb server host (e.g. `localhost` or domain) |
-| `VITE_REVERB_PORT` | `8080` | Reverb WebSocket port |
-| `VITE_REVERB_SCHEME` | `http` | Connection protocol (`http` or `https`) |
-| `VITE_ENABLE_DEMO_SWITCHER` | *(unset)* | Set `true` in local development to display a fast demo role switcher |
-
-> **Important:** Vite inlines `VITE_*` environment variables during `npm run build`. When deploying to Vercel, trigger a redeploy after modifying variables.
+| `VITE_API_URL` | `http://127.0.0.1:8000/api/v1` | API base URL |
+| `VITE_DEFAULT_TENANT` | unset | Workspace to use when none was chosen (local development) |
+| `VITE_TURNSTILE_SITE_KEY` | unset | Shows the Cloudflare human check on sign-up and forgot-password (pair with `TURNSTILE_SECRET` on the API) |
+| `VITE_TENANT_BASE_DOMAIN` | unset | Wildcard domain: `acme.<domain>` selects the workspace `acme` |
+| `VITE_REVERB_APP_KEY`, `VITE_REVERB_HOST`, `VITE_REVERB_PORT`, `VITE_REVERB_SCHEME` | unset | Optional live updates (match the API's Reverb settings). Without them the app polls |
+| `VITE_ENABLE_DEMO_SWITCHER` | unset | `true` (dev server only) adds a "switch demo account" list. Never set in production |
 
 ---
 
-## Available Scripts
+## Scripts
 
-| Script | Command | Purpose |
-|---|---|---|
-| Development | `npm run dev` | Launches local Vite development server with HMR |
-| Build | `npm run build` | Compiles optimized production bundle into `dist/` |
-| Preview | `npm run preview` | Serves the compiled `dist/` build locally |
-| Lint | `npm run lint` | Runs oxlint across all source files |
-| E2E Tests | `npm run test:e2e` | Executes Playwright end-to-end browser tests |
-
----
-
-## Architecture & Key Design Decisions
-
-1. **Sanitized Base URLs:** Axios and Echo clients automatically strip trailing slashes from `VITE_API_URL`, preventing reverse proxies from returning 301 redirects that strip `Authorization` headers.
-2. **Cold Boot Silent Authentication:** When restoring sessions from `localStorage` on page load, 401 errors on `/auth/me` silently clear the stored token rather than alerting the user with an unwanted "session expired" toast.
-3. **Lazy-Loaded Staff Console:** The staff workspace and administrative modules are loaded dynamically via `React.lazy`, ensuring public visitors and customers never incur unnecessary bundle size penalties.
-4. **Client-Direct Cloudinary Pipeline:** File uploads never route through the application backend, ensuring high throughput and zero server memory overhead during large file transfers.
-5. **Decoupled Real-Time Architecture:** Real-time WebSocket pings are designed as an enhancement layer. If WebSockets are unavailable or disconnected, all views seamlessly fall back to HTTP polling.
+| Script | |
+|---|---|
+| `npm run dev` | Development server with hot reload |
+| `npm run build` | Production build into `dist/` |
+| `npm run preview` | Serve the production build locally |
+| `npm run lint` | oxlint |
+| `npm run test:e2e` | Playwright browser tests |
 
 ---
 
-## Deployment (Vercel & Docker)
+## Testing
 
-### Deploying on Vercel
-
-1. Import the repository in your [Vercel Dashboard](https://vercel.com).
-2. Set the **Root Directory** to `deskflow-frontend`.
-3. Choose the **Vite** framework preset:
-   - Build Command: `npm run build`
-   - Output Directory: `dist`
-4. In Environment Variables, set:
-   ```env
-   VITE_API_URL=https://<your-backend-domain>/api/v1
-   ```
-5. Click **Deploy**. Deep links are automatically handled by [`vercel.json`](vercel.json).
-
-### Running with Docker
+The browser tests drive a real API with the demo data (workspaces `techcorp` and `shopease`). Start the API, then:
 
 ```bash
-docker build --build-arg VITE_API_URL=http://localhost:8000/api/v1 -t deskflow-frontend .
-docker run -p 5173:80 deskflow-frontend
+CHROMIUM_PATH=/usr/bin/chromium E2E_NO_SERVER=1 npm run test:e2e     # use an existing browser and dev server
+npx playwright install chromium && npm run test:e2e                   # or let Playwright download one
 ```
+
+They cover sign-in and role routing, filing a ticket and the full reply loop, internal notes staying hidden from customers, admin tools, dark mode and language persistence, and workspace isolation (the same email in two workspaces sees different tickets; staff of one company cannot sign in to another; the platform owner sees counts only). `.github/workflows/ci.yml` runs lint, build, the API tests and these.
+
+---
+
+## Design Decisions
+
+1. **The API is the authority.** Route guards and hidden menus are courtesy; every rule is enforced server-side.
+2. **The workspace travels with the request**, never in the data: a header before sign-in, the person's own token after.
+3. **Realtime is a bonus, not a dependency.** Pings carry no content; every screen also polls.
+4. **Safe rich text.** Replies are Markdown; the server renders and sanitises (no raw HTML, no images), and the editor's preview calls the same renderer.
+5. **Small first load.** Staff and admin pages are lazy chunks; the service worker caches only an offline page, never API data.
+6. **Dark mode without rewriting every component:** a class on `<html>` plus a compact override layer for the palette in use.
+
+---
+
+## Deployment
+
+- **Vercel:** set `VITE_API_URL` (and the optional Reverb and tenancy variables) in the project settings; `vercel.json` rewrites every path to `index.html`.
+- **Docker:** `Dockerfile` builds the app with `VITE_API_URL` as a build argument and serves it with nginx (`nginx.conf`).
+- For workspace subdomains, point a wildcard DNS record at the app and set `VITE_TENANT_BASE_DOMAIN` here and `TENANCY_BASE_DOMAIN` in the API.
+- Push notifications need HTTPS.
+
+---
+
+## Known Limits
+
+- Dark mode and translations cover the main screens; the rest of the staff console is English.
+- Real-time updates and browser push require the optional Reverb service and VAPID keys on the API.
+- The browser tests depend on the seeded demo data and a running API; they do not start one.

@@ -15,9 +15,13 @@ import PortalNewTicketPage from './pages/portal/PortalNewTicketPage';
 import PortalTicketPage from './pages/portal/PortalTicketPage';
 import PortalSlaPage from './pages/portal/PortalSlaPage';
 import AccountPage from './pages/account/AccountPage';
+import WorkspacePage from './pages/workspace/WorkspacePage';
+import StartWorkspacePage from './pages/workspace/StartWorkspacePage';
+import PlatformLoginPage from './pages/platform/PlatformLoginPage';
 import { ArticlePage, HelpCenterPage } from './pages/help/HelpPages';
 
 // Staff console is a separate lazy chunk: customers never download it.
+const PlatformPage = lazy(() => import('./pages/platform/PlatformPage'));
 const StaffLayout = lazy(() => import('./pages/staff/StaffLayout'));
 const TicketListPage = lazy(() => import('./pages/tickets/TicketListPage'));
 const TicketDetailPage = lazy(() => import('./pages/tickets/TicketDetailPage'));
@@ -30,13 +34,16 @@ const AiSettingsPage = lazy(() => import('./pages/admin/AiSettingsPage'));
 const OrganizationsPage = lazy(() => import('./pages/admin/OrganizationsPage'));
 const AutomationPage = lazy(() => import('./pages/admin/AutomationPage'));
 const IntegrationsPage = lazy(() => import('./pages/admin/IntegrationsPage'));
+const UsagePage = lazy(() => import('./pages/admin/UsagePage'));
 const TeamPage = lazy(() => import('./pages/admin/TeamPage'));
 const DepartmentsPage = lazy(() => import('./pages/admin/DepartmentsPage'));
+const WorkspaceSettingsPage = lazy(() => import('./pages/admin/WorkspaceSettingsPage'));
+const AdminActivityPage = lazy(() => import('./pages/admin/AdminActivityPage'));
 const HolidaysPage = lazy(() => import('./pages/admin/HolidaysPage'));
 
 const Splash = () => <div className="min-h-screen flex items-center justify-center text-slate-500">Loading…</div>;
 
-const homeFor = (user) => (user.role === 'customer' ? '/portal' : '/staff');
+const homeFor = (user) => (user.role === 'super_admin' ? '/platform' : user.role === 'customer' ? '/portal' : '/staff');
 
 /** Public pages: signed-in users are sent to their own home. */
 function PublicOnly() {
@@ -50,9 +57,18 @@ function RequireAudience({ audience }) {
   const { user, booting } = useAuth();
   if (booting) return <Splash />;
   if (!user) return <Navigate to="/login" replace />;
+  if (user.role === 'super_admin') return <Navigate to="/platform" replace />;
   const isCustomer = user.role === 'customer';
   if ((audience === 'customer') !== isCustomer) return <Navigate to={homeFor(user)} replace />;
   return <Outlet />;
+}
+
+/** The platform owner's area. */
+function RequirePlatform() {
+  const { user, booting } = useAuth();
+  if (booting) return <Splash />;
+  if (!user) return <Navigate to="/platform/login" replace />;
+  return user.role === 'super_admin' ? <Outlet /> : <Navigate to={homeFor(user)} replace />;
 }
 
 function RequirePermission({ allow, children }) {
@@ -72,6 +88,16 @@ export default function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/help" element={<HelpCenterPage />} />
               <Route path="/help/:slug" element={<ArticlePage />} />
+
+              {/* Which company? Creating one. The platform owner. */}
+              <Route path="/workspace" element={<WorkspacePage />} />
+              <Route path="/start" element={<StartWorkspacePage />} />
+              <Route element={<PublicOnly />}>
+                <Route path="/platform/login" element={<PlatformLoginPage />} />
+              </Route>
+              <Route element={<RequirePlatform />}>
+                <Route path="/platform" element={<PlatformPage />} />
+              </Route>
 
               <Route element={<PublicOnly />}>
                 <Route path="/login" element={<LoginPage />} />
@@ -101,6 +127,7 @@ export default function App() {
                   <Route path="analytics" element={<RequirePermission allow="view_analytics"><AnalyticsDashboard /></RequirePermission>} />
                   <Route path="kb" element={<RequirePermission allow="manage_routing"><KnowledgeBasePage /></RequirePermission>} />
                   <Route path="team" element={<RequirePermission allow="manage_routing"><TeamPage /></RequirePermission>} />
+                  <Route path="usage" element={<RequirePermission allow="manage_settings"><UsagePage /></RequirePermission>} />
                   <Route path="integrations" element={<RequirePermission allow="manage_settings"><IntegrationsPage /></RequirePermission>} />
                   <Route path="automation" element={<RequirePermission allow="manage_settings"><AutomationPage /></RequirePermission>} />
                   <Route path="organizations" element={<RequirePermission allow="manage_settings"><OrganizationsPage /></RequirePermission>} />
@@ -108,6 +135,8 @@ export default function App() {
                   <Route path="holidays" element={<RequirePermission allow="manage_settings"><HolidaysPage /></RequirePermission>} />
                   <Route path="policies" element={<RequirePermission allow="edit_sla_policies"><PolicyManager /></RequirePermission>} />
                   <Route path="ai" element={<RequirePermission allow="manage_settings"><AiSettingsPage /></RequirePermission>} />
+                  <Route path="workspace" element={<RequirePermission allow="manage_settings"><WorkspaceSettingsPage /></RequirePermission>} />
+                  <Route path="activity" element={<RequirePermission allow="manage_settings"><AdminActivityPage /></RequirePermission>} />
                   <Route path="audit" element={<RequirePermission allow="manage_settings"><AuditLogPage /></RequirePermission>} />
                 </Route>
               </Route>

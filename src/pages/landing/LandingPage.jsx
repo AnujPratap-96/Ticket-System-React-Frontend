@@ -122,7 +122,7 @@ export default function LandingPage() {
       <footer className="border-t border-slate-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-500">
           <span>© {new Date().getFullYear()} DeskFlow Support</span>
-          <nav className="flex gap-4" aria-label="Footer"><Link to="/help" className="hover:text-slate-800">Help center</Link><Link to="/login" className="hover:text-slate-800">Sign in</Link></nav>
+          <nav className="flex gap-4" aria-label="Footer"><Link to="/start" className="hover:text-slate-800">Create your own workspace</Link><Link to="/help" className="hover:text-slate-800">Help center</Link><Link to="/login" className="hover:text-slate-800">Sign in</Link></nav>
         </div>
       </footer>
     </div>

@@ -19,6 +19,7 @@ import TranslateTool, { useTranslate } from '../../components/ticket/TranslateTo
 import Avatar from '../../components/common/Avatar';
 import CannedPicker from '../../components/ticket/CannedPicker';
 import TagEditor from '../../components/ticket/TagEditor';
+import TimePanel from '../../components/ticket/TimePanel';
 import AttachmentList from '../../components/common/AttachmentList';
 import AttachmentPicker from '../../components/common/AttachmentPicker';
 import { PRIORITIES, allowedTransitions, fmt, label } from '../../lib';
@@ -276,6 +277,8 @@ export default function TicketDetailPage() {
               )}
             </div>
           )}
+
+          {isStaff && <TimePanel ticketId={id} />}
 
           {isStaff && (
             <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">

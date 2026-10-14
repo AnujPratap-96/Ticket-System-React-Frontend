@@ -12,7 +12,7 @@ test.describe('admin tools', () => {
     await page.getByRole('button', { name: 'Save' }).click();
     await expect(page.getByText(`E2E Corp ${stamp}`)).toBeVisible();
     await page.getByLabel('Search organizations').fill(`e2e-${stamp}`);
-    await expect(page.getByText(`@e2e-${stamp}.example.com`)).toBeVisible();
+    await expect(page.getByText(`@e2e-${stamp}.example.com`, { exact: true })).toBeVisible();
   });
 
   test('an automation rule can be created and switched off', async ({ page }) => {

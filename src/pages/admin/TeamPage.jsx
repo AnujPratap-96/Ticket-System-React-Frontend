@@ -13,8 +13,8 @@ function UserForm({ departments, initial, onClose, onSaved }) {
   const toast = useToast();
   const editing = !!initial;
   const [form, setForm] = useState(initial
-    ? { name: initial.name, role: initial.role, department_id: initial.department_id || '', max_active_tickets: initial.max_active_tickets }
-    : { name: '', email: '', role: 'agent', department_id: departments[0]?.id || '', max_active_tickets: 10 });
+    ? { name: initial.name, role: initial.role, department_id: initial.department_id || '', max_active_tickets: initial.max_active_tickets, away_until: initial.away_until ? initial.away_until.slice(0, 10) : '' }
+    : { name: '', email: '', role: 'agent', department_id: departments[0]?.id || '', max_active_tickets: 10, away_until: '' });
   const [busy, setBusy] = useState(false);
   const needsDept = form.role !== 'admin';
 
@@ -22,6 +22,8 @@ function UserForm({ departments, initial, onClose, onSaved }) {
     e.preventDefault();
     setBusy(true);
     const body = { ...form, department_id: needsDept ? form.department_id || null : null, max_active_tickets: Number(form.max_active_tickets) };
+    if (editing) body.away_until = needsDept && form.away_until ? `${form.away_until} 23:59:59` : null;
+    else delete body.away_until;
     try {
       const res = editing ? await api.patch(`/users/${initial.id}`, body) : await api.post('/users', body);
       toast.success(editing ? `${body.name} was updated.` : res.data.message, editing ? 'User updated' : 'Invitation sent');
@@ -50,6 +52,11 @@ function UserForm({ departments, initial, onClose, onSaved }) {
           <label className="block text-sm font-medium text-slate-700">Capacity
             <input type="number" min={1} max={100} className={input} value={form.max_active_tickets} onChange={(e) => setForm({ ...form, max_active_tickets: e.target.value })} /></label>
         </div>
+        {editing && needsDept && (
+          <label className="block text-sm font-medium text-slate-700">On leave until (optional)
+            <input type="date" min={new Date().toISOString().slice(0, 10)} className={input} value={form.away_until} onChange={(e) => setForm({ ...form, away_until: e.target.value })} />
+            <span className="block text-xs font-normal text-slate-500 mt-1">New tickets skip this person until the end of that day. Clear the date to bring them back.</span></label>
+        )}
         {needsDept && (
           <label className="block text-sm font-medium text-slate-700">Department
             <select required className={input} value={form.department_id} onChange={(e) => setForm({ ...form, department_id: e.target.value })}>
@@ -160,6 +167,7 @@ export default function TeamPage() {
                 </td>
                 <td className="p-3">
                   {m.invite_status ? <span className={m.invite_status === 'expired' ? 'text-rose-700' : 'text-amber-700'}>{m.invite_status === 'expired' ? 'Invite expired' : 'Invited'}</span>
+                    : m.away_until && new Date(m.away_until) > new Date() ? <span className="text-amber-700">On leave until {new Date(m.away_until).toLocaleDateString()}</span>
                     : m.is_active ? <span className="text-emerald-700">Active</span> : <span className="text-rose-700 font-medium">Suspended</span>}
                 </td>
                 <td className="p-3 text-right whitespace-nowrap">
@@ -169,6 +177,9 @@ export default function TeamPage() {
                       <button onClick={() => setForm(m)} className="text-indigo-600 font-semibold mr-3">Edit</button>
                       {m.id !== user.id && m.is_active && (
                         <button onClick={() => setErasing(m)} className="text-rose-600 hover:text-rose-700 font-semibold">Delete</button>
+                      )}
+                      {!m.is_active && !m.invite_status && (
+                        <button onClick={() => patch(m, `/users/${m.id}`, { is_active: true }, `${m.name} was reactivated`)} className="text-emerald-600 hover:text-emerald-700 font-semibold">Reactivate</button>
                       )}
                     </>
                   )}
@@ -185,7 +196,7 @@ export default function TeamPage() {
           <div className="space-y-4">
             <p className="text-sm text-slate-600">
               Are you sure you want to delete <strong>{erasing.name}</strong> ({erasing.email})?
-              If this user has tickets or activity, their record is preserved with status <strong>Suspended</strong> to maintain ticket history. They will no longer be able to log in.
+              If this person has tickets or replies, they are <strong>suspended</strong> instead of removed, so ticket history stays readable. They can no longer sign in, and you can reactivate them later. If they have no history, the account is deleted.
             </p>
             <div className="flex justify-end gap-2 pt-2">
               <button type="button" onClick={() => setErasing(null)} className="px-4 py-2 text-sm rounded-lg border border-slate-300 hover:bg-slate-50">Cancel</button>

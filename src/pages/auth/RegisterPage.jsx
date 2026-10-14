@@ -4,6 +4,7 @@ import { LifeBuoy } from 'lucide-react';
 import api, { errorMessage } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import Captcha, { captchaEnabled } from '../../components/common/Captcha';
 import PasswordInput from '../../components/common/PasswordInput';
 
 const input = 'mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-sm';
@@ -14,6 +15,8 @@ export default function RegisterPage() {
   const [step, setStep] = useState('details'); // 'details' | 'otp'
   const [form, setForm] = useState({ name: '', email: '', password: '', password_confirmation: '' });
   const [code, setCode] = useState('');
+  const [captcha, setCaptcha] = useState('');
+  const [captchaKey, setCaptchaKey] = useState(0);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
   const [busy, setBusy] = useState(false);
@@ -40,7 +43,7 @@ export default function RegisterPage() {
   const submitDetails = (e) => {
     e.preventDefault();
     run(async () => {
-      await api.post('/auth/register', form);
+      try { await api.post('/auth/register', { ...form, captcha_token: captcha }); } finally { setCaptchaKey((k) => k + 1); }
       setStep('otp');
       setCooldown(60);
       setInfo(`We sent a 6-digit code to ${form.email}.`);
@@ -84,10 +87,11 @@ export default function RegisterPage() {
             <label className="block text-sm font-medium text-slate-700">Email
               <input type="email" required className={input} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></label>
             <label className="block text-sm font-medium text-slate-700">Password
-              <PasswordInput required minLength={8} autoComplete="new-password" className={input} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} /></label>
+              <PasswordInput required minLength={10} autoComplete="new-password" className={input} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} /></label>
             <label className="block text-sm font-medium text-slate-700">Confirm password
-              <PasswordInput required minLength={8} autoComplete="new-password" className={input} value={form.password_confirmation} onChange={(e) => setForm({ ...form, password_confirmation: e.target.value })} /></label>
-            <button disabled={busy} className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-lg py-2 text-sm font-semibold">
+              <PasswordInput required minLength={10} autoComplete="new-password" className={input} value={form.password_confirmation} onChange={(e) => setForm({ ...form, password_confirmation: e.target.value })} /></label>
+            <Captcha onToken={setCaptcha} resetKey={captchaKey} />
+            <button disabled={busy || (captchaEnabled && !captcha)} className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-lg py-2 text-sm font-semibold">
               {busy ? 'Sending code…' : 'Send verification code'}
             </button>
           </form>

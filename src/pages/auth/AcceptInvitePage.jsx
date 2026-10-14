@@ -60,10 +60,10 @@ export default function AcceptInvitePage() {
           <form onSubmit={submit} className="space-y-4">
             <p className="text-sm text-slate-600">Hi <strong>{info.name}</strong>, you were invited as <strong className="capitalize">{info.role === 'lead' ? 'team lead' : info.role}</strong>. Choose a password to finish setting up <span className="font-medium">{info.email}</span>.</p>
             <label className="block text-sm font-medium text-slate-700">New password
-              <PasswordInput required minLength={8} autoComplete="new-password" className={field} value={password} onChange={(e) => setPassword(e.target.value)} />
+              <PasswordInput required minLength={10} autoComplete="new-password" className={field} value={password} onChange={(e) => setPassword(e.target.value)} />
             </label>
             <label className="block text-sm font-medium text-slate-700">Confirm password
-              <PasswordInput required minLength={8} autoComplete="new-password" className={field} value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+              <PasswordInput required minLength={10} autoComplete="new-password" className={field} value={confirm} onChange={(e) => setConfirm(e.target.value)} />
             </label>
             <button disabled={busy || password.length < 8 || password !== confirm} className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl py-2.5 text-sm font-semibold">{busy ? 'Activating…' : 'Activate my account'}</button>
             {confirm && password !== confirm && <p className="text-xs text-rose-600">The two passwords do not match.</p>}

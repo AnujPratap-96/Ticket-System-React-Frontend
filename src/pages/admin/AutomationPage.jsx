@@ -14,6 +14,11 @@ const CHOICES = {
   priority: PRIORITIES, status: STATUSES, channel: ['portal', 'email', 'api'], organization_tier: ['standard', 'silver', 'gold', 'platinum'], assigned: ['yes', 'no'],
 };
 const ACTIONS = { set_priority: 'Set priority', add_tag: 'Add tag', assign_to: 'Assign to', set_status: 'Set status', add_note: 'Add internal note' };
+const TEMPLATES = [
+  { name: 'Auto-close resolved tickets after 3 days', trigger: 'idle', idle_hours: 72, conditions: [{ field: 'status', op: 'is', value: 'resolved' }], actions: [{ type: 'set_status', value: 'closed' }] },
+  { name: 'Tag urgent-sounding tickets', trigger: 'ticket_created', idle_hours: 24, conditions: [{ field: 'title', op: 'contains', value: 'urgent' }], actions: [{ type: 'set_priority', value: 'high' }, { type: 'add_tag', value: 'urgent' }] },
+  { name: 'Flag tickets waiting on us for 2 days', trigger: 'idle', idle_hours: 48, conditions: [{ field: 'status', op: 'is', value: 'in_progress' }], actions: [{ type: 'add_tag', value: 'stale' }, { type: 'add_note', value: 'No activity for 2 days. Please follow up.' }] },
+];
 const f = 'border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm bg-white';
 
 const describe = (r, deps, agents) => {
@@ -46,7 +51,8 @@ function RuleForm({ initial, deps, agents, onClose, onSaved }) {
     e.preventDefault();
     setBusy(true);
     try {
-      const body = { ...form, idle_hours: form.trigger === 'idle' ? Number(form.idle_hours) : null };
+      const { template: _t, ...rest } = form;
+      const body = { ...rest, idle_hours: form.trigger === 'idle' ? Number(form.idle_hours) : null };
       if (initial?.id) await api.patch(`/automation-rules/${initial.id}`, body); else await api.post('/automation-rules', body);
       toast.success(`“${form.name}” was saved.`, 'Rule saved');
       onSaved();
@@ -131,6 +137,10 @@ export default function AutomationPage() {
         <div><h1 className="text-xl font-bold text-slate-900 flex items-center gap-2"><Zap className="w-5 h-5 text-indigo-600" />Automation</h1><p className="text-sm text-slate-500">Rules that tag, prioritise, assign or follow up on tickets by themselves.</p></div>
         <button onClick={() => setForm({})} className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold"><Plus className="w-4 h-4" />New rule</button>
       </div>
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        <span className="text-slate-500">Start from a template:</span>
+        {TEMPLATES.map((t) => <button key={t.name} onClick={() => setForm({ ...t, template: true })} className="px-3 py-1.5 rounded-full border border-slate-300 bg-white text-slate-700 font-semibold hover:border-indigo-400">{t.name}</button>)}
+      </div>
       <div className="bg-white border border-slate-200 rounded-2xl shadow-sm divide-y divide-slate-100" aria-busy={loading}>
         {loading && <div className="p-8 text-center text-sm text-slate-500">Loading…</div>}
         {!loading && rules.length === 0 && <div className="p-10 text-center text-sm text-slate-500">No rules yet. Try “When a ticket is created and the title contains <em>down</em>: set priority urgent”.</div>}
@@ -147,7 +157,7 @@ export default function AutomationPage() {
           </div>
         ))}
       </div>
-      {form && <RuleForm initial={form.id ? { ...form } : null} deps={deps} agents={agents} onClose={() => setForm(null)} onSaved={() => { setForm(null); load(); }} />}
+      {form && <RuleForm initial={form.id || form.template ? { ...form } : null} deps={deps} agents={agents} onClose={() => setForm(null)} onSaved={() => { setForm(null); load(); }} />}
     </div>
   );
 }

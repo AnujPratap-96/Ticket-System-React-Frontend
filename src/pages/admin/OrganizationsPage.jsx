@@ -4,6 +4,10 @@ import api, { errorMessage } from '../../api/client';
 import { useToast } from '../../context/ToastContext';
 import Modal from '../../components/common/Modal';
 import { label } from '../../lib';
+import UsageBar from '../../components/common/UsageBar';
+
+// Plan defaults, shown as placeholders so "empty = plan default" is obvious (the server is the source of truth).
+const PLAN_DEFAULTS = { standard: [100, 25, 10], silver: [500, 100, 20], gold: [2000, 500, 50], platinum: [null, null, 100] };
 
 const TIERS = ['standard', 'silver', 'gold', 'platinum'];
 const field = 'w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500';
@@ -11,7 +15,10 @@ const TIER_STYLE = { standard: 'bg-slate-100 text-slate-700', silver: 'bg-sky-50
 
 function OrgForm({ initial, onClose, onSaved }) {
   const toast = useToast();
-  const [form, setForm] = useState(initial ? { name: initial.name, domain: initial.domain, sla_tier: initial.sla_tier, is_active: initial.is_active } : { name: '', domain: '', sla_tier: 'standard', is_active: true });
+  const ov = initial?.overrides || {};
+  const [form, setForm] = useState(initial
+    ? { name: initial.name, domain: initial.domain, sla_tier: initial.sla_tier, is_active: initial.is_active, monthly_ticket_limit: ov.monthly_ticket_limit ?? '', max_customers: ov.max_customers ?? '', max_open_per_customer: ov.max_open_per_customer ?? '' }
+    : { name: '', domain: '', sla_tier: 'standard', is_active: true, monthly_ticket_limit: '', max_customers: '', max_open_per_customer: '' });
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -20,8 +27,10 @@ function OrgForm({ initial, onClose, onSaved }) {
     setBusy(true);
     setErrors({});
     try {
-      if (initial) await api.patch(`/organizations/${initial.id}`, form);
-      else await api.post('/organizations', form);
+      const body = { ...form };
+      ['monthly_ticket_limit', 'max_customers', 'max_open_per_customer'].forEach((k) => { body[k] = body[k] === '' ? null : Number(body[k]); });
+      if (initial) await api.patch(`/organizations/${initial.id}`, body);
+      else await api.post('/organizations', body);
       toast.success(initial ? `${form.name} was updated.` : `${form.name} was added. Customers with @${form.domain} emails join it automatically.`, initial ? 'Organization updated' : 'Organization created');
       onSaved();
     } catch (err) {
@@ -47,6 +56,17 @@ function OrgForm({ initial, onClose, onSaved }) {
           <select className={`${field} mt-1`} value={form.sla_tier} onChange={(e) => setForm({ ...form, sla_tier: e.target.value })}>{TIERS.map((t) => <option key={t} value={t}>{label(t)}</option>)}</select>
           <span className="block text-xs text-slate-500 mt-1">Decides the response and resolution targets for this company's new tickets.</span>
         </label>
+        <fieldset className="rounded-xl border border-slate-200 p-3">
+          <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-slate-500">Usage limits</legend>
+          <p className="text-xs text-slate-500 mb-2">Leave empty to use the plan's default (shown in grey). Type <strong>0</strong> for unlimited.</p>
+          <div className="grid grid-cols-3 gap-2">
+            {[['monthly_ticket_limit', 'Tickets / month', 0], ['max_customers', 'User accounts', 1], ['max_open_per_customer', 'Open per person', 2]].map(([k, l, i]) => (
+              <label key={k} className="text-xs font-medium text-slate-600">{l}
+                <input type="number" min="0" className={`${field} mt-1`} value={form[k]} placeholder={PLAN_DEFAULTS[form.sla_tier][i] === null ? 'no limit' : String(PLAN_DEFAULTS[form.sla_tier][i])} onChange={(e) => setForm({ ...form, [k]: e.target.value })} />
+              </label>
+            ))}
+          </div>
+        </fieldset>
         {initial && (
           <label className="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />Active (inactive companies no longer auto-join new sign-ups)</label>
         )}
@@ -97,6 +117,7 @@ export default function OrganizationsPage() {
   const [open, setOpen] = useState(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(null);
+  const [moveTo, setMoveTo] = useState('');
 
   const load = useCallback(async () => {
     try {
@@ -117,9 +138,10 @@ export default function OrganizationsPage() {
   const confirmDelete = async () => {
     if (!deleting) return;
     try {
-      const r = await api.delete(`/organizations/${deleting.id}`);
+      const r = await api.delete(`/organizations/${deleting.id}`, { params: moveTo ? { move_to: moveTo } : {} });
       toast.success(r.data.message || 'Organization deleted');
       setDeleting(null);
+      setMoveTo('');
       load();
     } catch (e) {
       toast.error(errorMessage(e));
@@ -159,8 +181,15 @@ export default function OrganizationsPage() {
               <span className="text-xs text-slate-600">{o.tickets_count} {o.tickets_count === 1 ? 'ticket' : 'tickets'}</span>
               <button onClick={() => attach(o)} className="text-xs font-semibold text-indigo-600 hover:underline" title="Link existing customers whose email is on this domain">Add matching customers</button>
               <button onClick={() => setForm(o)} className="text-xs font-semibold text-slate-600 hover:underline">Edit</button>
-              <button onClick={() => setDeleting(o)} className="text-xs font-semibold text-rose-600 hover:underline">Delete</button>
+              <button onClick={() => { setDeleting(o); setMoveTo(''); }} className="text-xs font-semibold text-rose-600 hover:underline">Delete</button>
             </div>
+            {o.limits && (
+              <div className="grid sm:grid-cols-3 gap-3 px-4 pb-3 pl-12">
+                <UsageBar label="Tickets this month" used={o.usage.tickets_this_month} limit={o.limits.monthly_tickets} compact />
+                <UsageBar label="User accounts" used={o.usage.customers} limit={o.limits.customers} compact />
+                <UsageBar label="Open tickets" used={o.usage.open_tickets} limit={null} compact />
+              </div>
+            )}
             {open === o.id && <div className="bg-slate-50/70 border-t border-slate-100"><CustomersPanel org={o} /></div>}
           </div>
         ))}
@@ -171,11 +200,21 @@ export default function OrganizationsPage() {
           <div className="space-y-4">
             <p className="text-sm text-slate-600">
               Are you sure you want to delete the organization <strong>{deleting.name}</strong> (@{deleting.domain})?
-              Any linked customers and tickets will have their organization unlinked. This cannot be undone.
+              Its customers are unlinked (their accounts stay). This cannot be undone.
             </p>
+            {deleting.tickets_count > 0 && (
+              <label className="block text-sm font-medium text-slate-700">
+                It has {deleting.tickets_count} {deleting.tickets_count === 1 ? 'ticket' : 'tickets'}. Move {deleting.tickets_count === 1 ? 'it' : 'them'} to
+                <select required className={`${field} mt-1`} value={moveTo} onChange={(e) => setMoveTo(e.target.value)}>
+                  <option value="">Choose an organization…</option>
+                  {rows.filter((r) => r.id !== deleting.id).map((r) => <option key={r.id} value={r.id}>{r.name} ({label(r.sla_tier)})</option>)}
+                </select>
+                <span className="block text-xs text-slate-500 mt-1">Open tickets then follow that company's plan and SLA targets.</span>
+              </label>
+            )}
             <div className="flex justify-end gap-2 pt-2">
               <button type="button" onClick={() => setDeleting(null)} className="px-4 py-2 text-sm rounded-xl border border-slate-300 hover:bg-slate-50">Cancel</button>
-              <button onClick={confirmDelete} className="px-4 py-2 text-sm rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold">Delete organization</button>
+              <button onClick={confirmDelete} disabled={deleting.tickets_count > 0 && !moveTo} className="px-4 py-2 text-sm rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold disabled:opacity-50">Delete organization</button>
             </div>
           </div>
         </Modal>

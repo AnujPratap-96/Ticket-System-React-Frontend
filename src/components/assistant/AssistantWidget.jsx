@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Bot, MessageCircle, Send, Sparkles, X } from 'lucide-react';
 import api from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
@@ -20,6 +20,7 @@ const save = (messages, owner) => { try { sessionStorage.setItem(STORE, JSON.str
 export default function AssistantWidget() {
   const { user, booting } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const isCustomer = user?.role === 'customer';
   const isStaff = !!user && !isCustomer;
   const ticketBase = isStaff ? '/staff/tickets' : '/portal/tickets';
@@ -98,6 +99,9 @@ export default function AssistantWidget() {
   };
 
   const clear = () => { setMessages([]); };
+
+  // The assistant answers for one company; these pages are not inside one.
+  if (/^\/(platform|workspace|start)/.test(pathname) || user?.role === 'super_admin') return null;
 
   return (
     <>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LifeBuoy } from 'lucide-react';
+import Captcha, { captchaEnabled } from '../../components/common/Captcha';
 import api, { errorMessage } from '../../api/client';
 import { useToast } from '../../context/ToastContext';
 import PasswordInput from '../../components/common/PasswordInput';
@@ -11,6 +12,8 @@ export default function ForgotPasswordPage() {
   const navigate = useNavigate();
   const toast = useToast();
   const [step, setStep] = useState('email');
+  const [captcha, setCaptcha] = useState('');
+  const [captchaKey, setCaptchaKey] = useState(0);
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
@@ -34,7 +37,7 @@ export default function ForgotPasswordPage() {
   const sendCode = (e) => {
     e.preventDefault();
     run(async () => {
-      await api.post('/auth/forgot-password', { email });
+      try { await api.post('/auth/forgot-password', { email, captcha_token: captcha }); } finally { setCaptchaKey((k) => k + 1); }
       setStep('reset');
       setCooldown(60);
       toast.success('If that email has an account, a reset code is on its way.', 'Check your email');
@@ -50,11 +53,12 @@ export default function ForgotPasswordPage() {
     });
   };
 
-  const resend = () => run(async () => {
+  // a human-check token works once, so with the check on, "resend" goes back to the first step
+  const resend = () => (captchaEnabled ? (setStep('email'), setCode('')) : run(async () => {
     await api.post('/auth/forgot-password', { email });
     setCooldown(60);
     toast.info('If the account exists, a new code was sent.');
-  });
+  }));
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 py-10">
@@ -70,7 +74,8 @@ export default function ForgotPasswordPage() {
             <p className="text-sm text-slate-600">Enter your account email and we will send you a 6-digit code.</p>
             <label className="block text-sm font-medium text-slate-700">Email
               <input type="email" required className={input} value={email} onChange={(e) => setEmail(e.target.value)} /></label>
-            <button disabled={busy} className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-lg py-2 text-sm font-semibold">{busy ? 'Sending…' : 'Send code'}</button>
+            <Captcha onToken={setCaptcha} resetKey={captchaKey} />
+            <button disabled={busy || (captchaEnabled && !captcha)} className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-lg py-2 text-sm font-semibold">{busy ? 'Sending…' : 'Send code'}</button>
           </form>
         ) : (
           <form onSubmit={reset} className="space-y-3">
@@ -78,9 +83,9 @@ export default function ForgotPasswordPage() {
             <label className="block text-sm font-medium text-slate-700">Code
               <input required inputMode="numeric" maxLength={6} autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} className={`${input} text-center tracking-[0.5em] font-mono`} /></label>
             <label className="block text-sm font-medium text-slate-700">New password
-              <PasswordInput required minLength={8} autoComplete="new-password" className={input} value={password} onChange={(e) => setPassword(e.target.value)} /></label>
+              <PasswordInput required minLength={10} autoComplete="new-password" className={input} value={password} onChange={(e) => setPassword(e.target.value)} /></label>
             <label className="block text-sm font-medium text-slate-700">Confirm new password
-              <PasswordInput required minLength={8} autoComplete="new-password" className={input} value={confirm} onChange={(e) => setConfirm(e.target.value)} /></label>
+              <PasswordInput required minLength={10} autoComplete="new-password" className={input} value={confirm} onChange={(e) => setConfirm(e.target.value)} /></label>
             <button disabled={busy || code.length !== 6} className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-lg py-2 text-sm font-semibold">{busy ? 'Saving…' : 'Update password'}</button>
             <div className="flex items-center justify-between text-sm">
               <button type="button" onClick={() => { setStep('email'); setCode(''); setError(''); }} className="text-slate-600 underline">Change email</button>

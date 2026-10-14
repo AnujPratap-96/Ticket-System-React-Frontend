@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { BarChart2, BookOpen, Building, Building2, CalendarOff, Plug, Zap, FileText, LifeBuoy, LogOut, MessageSquare, MessageSquareText, ScrollText, Settings2, Sparkles, User as UserIcon, Users } from 'lucide-react';
+import { BarChart2, BookOpen, Building, Building2, CalendarOff, Gauge, Plug, Zap, FileText, LifeBuoy, LogOut, MessageSquare, MessageSquareText, ScrollText, Settings2, Sparkles, User as UserIcon, Users } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Avatar from '../common/Avatar';
 import Dropdown, { menuItem } from '../common/Dropdown';
@@ -30,6 +30,8 @@ export default function Topbar() {
   const manage = [
     permissions.manage_routing && { to: '/staff/team', icon: Users, text: 'Team' },
     permissions.manage_routing && { to: '/staff/kb', icon: BookOpen, text: 'Help articles' },
+    permissions.manage_settings && { to: '/staff/workspace', icon: Settings2, text: 'Workspace settings' },
+    permissions.manage_settings && { to: '/staff/usage', icon: Gauge, text: 'Usage and limits' },
     permissions.manage_settings && { to: '/staff/integrations', icon: Plug, text: 'Integrations' },
     permissions.manage_settings && { to: '/staff/automation', icon: Zap, text: 'Automation' },
     permissions.manage_settings && { to: '/staff/organizations', icon: Building, text: 'Organizations' },
@@ -38,6 +40,7 @@ export default function Topbar() {
     permissions.edit_sla_policies && { to: '/staff/policies', icon: FileText, text: 'SLA policies' },
     permissions.manage_settings && { to: '/staff/ai', icon: Sparkles, text: 'AI assistant' },
     permissions.manage_settings && { to: '/staff/audit', icon: ScrollText, text: 'Audit log' },
+    permissions.manage_settings && { to: '/staff/activity', icon: ScrollText, text: 'Admin activity' },
   ].filter(Boolean);
 
   return (
@@ -46,7 +49,7 @@ export default function Topbar() {
         <div className="flex items-center gap-2 sm:gap-5 min-w-0">
           <NavLink to="/staff" end className="flex items-center gap-2 shrink-0" aria-label="DeskFlow home">
             <span className="bg-indigo-600 p-1.5 rounded-lg"><LifeBuoy className="w-4 h-4" /></span>
-            <span className="font-bold tracking-wide hidden sm:inline">DeskFlow</span>
+            <span className="font-bold tracking-wide hidden sm:inline">{user.tenant?.name || 'DeskFlow'}</span>
           </NavLink>
 
           <nav className="flex items-center gap-0.5 sm:gap-1" aria-label="Main">
@@ -93,7 +96,7 @@ export default function Topbar() {
               <div className="border-t border-slate-100 mt-1 pt-1">
                 <div className="px-4 py-1 text-[10px] uppercase tracking-wide text-slate-400">Demo: switch account</div>
                 {DEMO_USERS.filter((u) => u.email !== user.email).map((u) => (
-                  <button key={u.email} role="menuitem" onClick={() => login(u.email, 'password123')} className={menuItem}>{u.label}</button>
+                  <button key={u.email} role="menuitem" onClick={() => login(u.email, import.meta.env.VITE_DEMO_PASSWORD || '')} className={menuItem}>{u.label}</button>
                 ))}
               </div>
             )}

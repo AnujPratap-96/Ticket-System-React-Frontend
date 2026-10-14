@@ -65,3 +65,12 @@ export async function uploadAvatar(file, onProgress) {
 
   return data.user;
 }
+
+/** Workspace logo: same flow as a profile photo, but signed for the workspace. Resolves with the new branding settings. */
+export async function uploadLogo(file, onProgress) {
+  const { data: sig } = await api.post('/settings/branding/logo/sign');
+  await postToCloudinary(sig, file, onProgress);
+  const { data } = await api.post('/settings/branding/logo', { public_id: sig.public_id });
+
+  return data;
+}

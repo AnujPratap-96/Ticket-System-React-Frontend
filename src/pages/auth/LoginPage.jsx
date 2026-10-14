@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LifeBuoy } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { errorMessage } from '../../api/client';
+import api, { errorMessage } from '../../api/client';
+import { getTenant } from '../../lib/tenant';
 import PasswordInput from '../../components/common/PasswordInput';
 import { useT } from '../../context/PreferencesContext';
 import { LanguageSelect, ThemeToggle } from '../../components/common/PreferenceControls';
@@ -10,6 +11,11 @@ import { LanguageSelect, ThemeToggle } from '../../components/common/PreferenceC
 export default function LoginPage() {
   const { login, submitTwoFactor } = useAuth();
   const t = useT();
+  const [workspace, setWorkspace] = useState(null);
+  useEffect(() => {
+    const slug = getTenant();
+    if (slug) api.get(`/workspaces/${slug}`).then((r) => setWorkspace(r.data)).catch(() => setWorkspace(null));
+  }, []);
   const [challenge, setChallenge] = useState(null);
   const [code, setCode] = useState('');
   const [email, setEmail] = useState('');
@@ -43,7 +49,7 @@ export default function LoginPage() {
         <div className="flex items-center gap-3 mb-2">
           <div className="bg-indigo-600 p-2 rounded-lg text-white"><LifeBuoy className="w-5 h-5" /></div>
           <div>
-            <h1 className="font-bold text-slate-900">DeskFlow Support</h1>
+            <h1 className="font-bold text-slate-900">{workspace?.name || 'DeskFlow Support'}</h1>
             <p className="text-xs text-slate-500">{t('login.title')}</p>
           </div>
         </div>
@@ -72,6 +78,7 @@ export default function LoginPage() {
         </button>
         <p className="text-sm text-slate-600 text-center">{t('login.newCustomer')} <Link to="/register" className="text-indigo-600 font-semibold">{t('login.createAccount')}</Link></p>
         <p className="text-sm text-slate-600 text-center"><Link to="/help" className="text-indigo-600 font-semibold">{t('login.browseHelp')}</Link></p>
+        <p className="text-xs text-slate-500 text-center">{workspace ? <>Not {workspace.name}? </> : null}<Link to="/workspace" className="text-indigo-600 font-semibold">{workspace ? 'Change workspace' : 'Choose your workspace'}</Link> · <Link to="/start" className="text-indigo-600 font-semibold">Create one</Link></p>
       </form>
     </div>
   );

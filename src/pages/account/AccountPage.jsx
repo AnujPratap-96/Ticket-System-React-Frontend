@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import {
-  AlertTriangle, BadgeCheck, Bell, PenLine, Building2, Camera, Check, Copy, Download, KeyRound, Lock, Mail,
+  AlertTriangle, BadgeCheck, Bell, CalendarOff, PenLine, Building2, Camera, Check, Copy, Download, KeyRound, Lock, Mail,
   LogOut, Monitor, Pencil, ShieldAlert, ShieldCheck, Smartphone, Trash2, UserRound, X,
 } from 'lucide-react';
 import api, { errorMessage } from '../../api/client';
@@ -38,6 +38,37 @@ function Chip({ icon: Icon, tone = 'slate', children }) {
     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${tones[tone]}`}>
       {Icon && <Icon className="w-3.5 h-3.5" aria-hidden="true" />}{children}
     </span>
+  );
+}
+
+/** Staff: mark yourself away so automatic routing skips you, optionally handing your open tickets to teammates. */
+function LeaveCard({ user, updateUser }) {
+  const toast = useToast();
+  const away = user.away_until && new Date(user.away_until) > new Date();
+  const [date, setDate] = useState('');
+  const [release, setRelease] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const send = async (body, okMsg) => {
+    setBusy(true);
+    try { const r = await api.patch('/auth/availability', body); updateUser(r.data.user); toast.success(r.data.message, okMsg); setDate(''); }
+    catch (err) { toast.error(errorMessage(err)); } finally { setBusy(false); }
+  };
+  return (
+    <Card icon={CalendarOff} title="Time away" description="On leave? New tickets will skip you until you are back.">
+      {away ? (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-slate-700">You are away until <strong>{new Date(user.away_until).toLocaleDateString()}</strong>.</p>
+          <button disabled={busy} onClick={() => send({ away_until: null }, 'Welcome back')} className={btnPrimary}>I’m back</button>
+        </div>
+      ) : (
+        <form onSubmit={(e) => { e.preventDefault(); send({ away_until: `${date} 23:59:59`, release_tickets: release }, 'You are away'); }} className="space-y-3">
+          <label className="block text-sm font-medium text-slate-700">Away until
+            <input type="date" required min={new Date(Date.now() + 864e5).toISOString().slice(0, 10)} value={date} onChange={(e) => setDate(e.target.value)} className={`${field} mt-1 max-w-xs`} /></label>
+          <label className="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={release} onChange={(e) => setRelease(e.target.checked)} />Hand my open tickets to teammates</label>
+          <button disabled={busy || !date} className={btnPrimary}>Mark me away</button>
+        </form>
+      )}
+    </Card>
   );
 }
 
@@ -374,6 +405,8 @@ export default function AccountPage() {
             </Card>
           )}
 
+          {!isCustomer && <LeaveCard user={user} updateUser={updateUser} />}
+
           {/* ---------- Security ---------- */}
           <Card icon={ShieldCheck} title="Two-factor authentication" description="Protect your account with a code from an authenticator app when you sign in.">
             {recovery && (
@@ -437,10 +470,10 @@ export default function AccountPage() {
                 <PasswordInput required autoComplete="current-password" className={`${field} mt-1`} value={pw.current_password} onChange={(e) => setPw({ ...pw, current_password: e.target.value })} />
               </label>
               <label className="block text-sm font-medium text-slate-700">New password
-                <PasswordInput required minLength={8} autoComplete="new-password" className={`${field} mt-1`} value={pw.password} onChange={(e) => setPw({ ...pw, password: e.target.value })} />
+                <PasswordInput required minLength={10} autoComplete="new-password" className={`${field} mt-1`} value={pw.password} onChange={(e) => setPw({ ...pw, password: e.target.value })} />
               </label>
               <label className="block text-sm font-medium text-slate-700">Confirm new password
-                <PasswordInput required minLength={8} autoComplete="new-password" className={`${field} mt-1`} value={pw.password_confirmation} onChange={(e) => setPw({ ...pw, password_confirmation: e.target.value })} />
+                <PasswordInput required minLength={10} autoComplete="new-password" className={`${field} mt-1`} value={pw.password_confirmation} onChange={(e) => setPw({ ...pw, password_confirmation: e.target.value })} />
               </label>
               {pw.password_confirmation && pw.password !== pw.password_confirmation && <p className="text-xs text-rose-600 sm:col-span-2">The two new passwords do not match.</p>}
               <div className="sm:col-span-2"><button disabled={pwBusy || pw.password.length < 8 || pw.password !== pw.password_confirmation} className={btnPrimary}>{pwBusy ? 'Saving…' : 'Change password'}</button></div>

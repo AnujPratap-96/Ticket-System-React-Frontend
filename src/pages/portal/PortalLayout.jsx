@@ -18,7 +18,7 @@ export default function PortalLayout() {
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-3 sm:px-4 flex items-center justify-between h-14">
           <div className="flex items-center gap-4 sm:gap-6 min-w-0">
-            <Link to="/portal" className="flex items-center gap-2 font-bold text-slate-900 shrink-0" aria-label="Support Center home"><LifeBuoy className="w-5 h-5 text-indigo-600" /><span>DeskFlow<span className="hidden sm:inline"> Support</span></span></Link>
+            <Link to="/portal" className="flex items-center gap-2 font-bold text-slate-900 shrink-0" aria-label="Support Center home"><LifeBuoy className="w-5 h-5 text-indigo-600" /><span>{user.tenant?.name || <>DeskFlow<span className="hidden sm:inline"> Support</span></>}</span></Link>
             <nav className="hidden sm:flex" aria-label="Customer">
               <NavLink to="/portal" end className={link}>{t('nav.myTickets')}</NavLink>
               <NavLink to="/portal/new" className={link}>{t('nav.createTicket')}</NavLink>

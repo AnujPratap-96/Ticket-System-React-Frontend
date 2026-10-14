@@ -3,6 +3,7 @@ import { ShieldCheck } from 'lucide-react';
 import api, { errorMessage } from '../../api/client';
 import { useToast } from '../../context/ToastContext';
 import { label } from '../../lib';
+import UsageBar from '../../components/common/UsageBar';
 
 const dur = (m) => (m >= 1440 && m % 1440 === 0 ? `${m / 1440} d` : m >= 60 ? `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}` : `${m} min`);
 
@@ -33,6 +34,18 @@ export default function PortalSlaPage() {
         </table>
         {data.targets.some((t) => t.business_hours_only) && <p className="text-xs text-slate-500 px-3 py-2 border-t border-slate-100">Some targets only count during business hours.</p>}
       </div>
+
+      {data.limits && (
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3">
+          <h2 className="text-sm font-semibold text-slate-900">Your company's plan limits</h2>
+          <div className="grid sm:grid-cols-3 gap-4">
+            <UsageBar label="Tickets this month" used={data.limits.usage.tickets_this_month} limit={data.limits.plan.monthly_tickets} />
+            <UsageBar label="User accounts" used={data.limits.usage.customers} limit={data.limits.plan.customers} />
+            <UsageBar label="Open tickets (company)" used={data.limits.usage.open_tickets} limit={null} />
+          </div>
+          {data.limits.plan.open_per_customer && <p className="text-xs text-slate-500">Each person can have up to {data.limits.plan.open_per_customer} open tickets at the same time.</p>}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[['Tickets (90 days)', s.tickets], ['Answered', s.answered], ['Resolved', s.resolved], ['Met our targets', s.within_targets == null ? '—' : `${s.within_targets}%`]].map(([k, v]) => (

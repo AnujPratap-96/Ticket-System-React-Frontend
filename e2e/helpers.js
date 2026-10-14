@@ -6,7 +6,8 @@ export const USERS = {
   agent: 'agent.sarah@deskflow.com',
   customer: 'rahul@acme.com',
 };
-export const PASSWORD = 'password123';
+// The demo password is whatever DEMO_PASSWORD the API was seeded with: pass it as E2E_PASSWORD.
+export const PASSWORD = process.env.E2E_PASSWORD || '';
 
 export async function signIn(page, email, password = PASSWORD) {
   await page.goto('/login');

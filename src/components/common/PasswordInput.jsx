@@ -8,11 +8,13 @@ import { Eye, EyeOff } from 'lucide-react';
 export default function PasswordInput({ className = '', ...props }) {
   const [visible, setVisible] = useState(false);
   const margin = className.match(/\bmt-\d+\b/)?.[0] || '';
+  // A new password must meet the server's rule (10+ characters, letters and numbers): say so before submitting.
+  const rule = props.autoComplete === 'new-password' ? { pattern: '(?=.*[A-Za-z])(?=.*[0-9]).{10,}', title: 'At least 10 characters, with letters and numbers' } : {};
   const inputClass = className.replace(/\bmt-\d+\b/, '').trim();
 
   return (
     <div className={`relative ${margin}`}>
-      <input {...props} type={visible ? 'text' : 'password'} className={`${inputClass} pr-11`} />
+      <input {...rule} {...props} type={visible ? 'text' : 'password'} className={`${inputClass} pr-11`} />
       <button
         type="button"
         onClick={() => setVisible((v) => !v)}
