@@ -1,5 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Bold, Code, Italic, Link2, List, ListOrdered, Quote } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import api from '../../api/client';
 
 const TOOLS = [
@@ -94,7 +95,7 @@ const RichEditor = forwardRef(function RichEditor({ value, onChange, placeholder
           className="w-full rounded-b-lg bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30" />
       ) : (
         <div className="min-h-[7rem] px-3 py-2" aria-live="polite" aria-busy={loading}>
-          {html ? <div className="rich text-sm text-slate-800" dangerouslySetInnerHTML={{ __html: html }} /> : <p className="text-sm text-slate-400">{loading ? 'Loading preview…' : 'Nothing to preview yet.'}</p>}
+          {html ? <div className="rich text-sm text-slate-800" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }} /> : <p className="text-sm text-slate-400">{loading ? 'Loading preview…' : 'Nothing to preview yet.'}</p>}
         </div>
       )}
       <div className="px-3 pb-1.5 text-[11px] text-slate-400">Formatting uses Markdown: **bold**, *italic*, - lists, [links](https://…)</div>
@@ -107,5 +108,5 @@ export default RichEditor;
 /** A sent message, formatted. The HTML comes from the server's safe renderer. */
 export function RichBody({ html, text }) {
   if (!html) return <p className="text-sm text-slate-800 whitespace-pre-wrap">{text}</p>;
-  return <div className="rich text-sm text-slate-800" dangerouslySetInnerHTML={{ __html: html }} />;
+  return <div className="rich text-sm text-slate-800" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }} />;
 }
